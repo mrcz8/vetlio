@@ -20,9 +20,9 @@ class MedicalDocumentsTable
         return $table
             ->columns([
                 TextColumn::make('code')
-                    ->label('Šifra')
+                    ->label('Code')
                     ->tooltip(function ($record) {
-                        return $record->locked_at ? 'Nalaz je zaključan' : null;
+                        return $record->locked_at ? 'The report is locked' : null;
                     })
                     ->icon(function ($record) {
                         return $record->locked_at ? Heroicon::LockClosed : null;
@@ -33,30 +33,30 @@ class MedicalDocumentsTable
                 TextColumn::make('reservation.from')
                     ->sortable()
                     ->dateTime('d.m.Y H:i')
-                    ->label('Rezervacija'),
+                    ->label('Reservation'),
 
                 TextColumn::make('patient.name')
-                    ->label('Pacijent')
+                    ->label('Patient')
                     ->sortable()
                     ->searchable(),
 
                 TextColumn::make('client.full_name')
-                    ->label('Klijent')
+                    ->label('Client')
                     ->sortable()
                     ->searchable(),
 
                 TextColumn::make('reason_for_coming')
-                    ->label('Razlog za dolazak')
+                    ->label('Reason for visit')
                     ->searchable(),
 
                 TextColumn::make('serviceProvider.name')
-                    ->label('Liječnik')
+                    ->label('Doctor')
                     ->sortable()
                     ->searchable(),
 
                 TextColumn::make('items_sum_total')
                     ->money('EUR', 100)
-                    ->label('Ukupno')
+                    ->label('Total')
                     ->sortable()
                     ->weight(FontWeight::Bold)
                     ->sum('items', 'total'),

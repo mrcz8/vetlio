@@ -44,7 +44,7 @@ class CalendarWidget extends BaseCalendarWidget
 
     protected ?string $defaultEventClickAction = 'view';
 
-    protected string|HtmlString|null|bool $heading = 'Kalendar';
+    protected string|HtmlString|null|bool $heading = 'Calendar';
 
     protected bool $eventClickEnabled = true;
 
@@ -81,20 +81,20 @@ class CalendarWidget extends BaseCalendarWidget
                 ->schema([
                     ToggleButtons::make('type')
                         ->grouped()
-                        ->label('Vrsta prikaza')
+                        ->label('View type')
                         ->columnSpanFull()
                         ->default(CalendarEventsType::All)
                         ->options(CalendarEventsType::class),
 
                     CheckboxList::make('users')
                         ->columnSpanFull()
-                        ->hint('Prikaži samo odabrane djelatnike')
-                        ->label('Djelatnici')
+                        ->hint('Show only selected users')
+                        ->label('Users')
                         ->options(User::all()->pluck('name', 'id')),
 
                     Select::make('clients')
-                        ->label('Klijent')
-                        ->hint('Prikaži samo rezervacije klijenta')
+                        ->label('Client')
+                        ->hint('Show only client reservations')
                         ->options(Client::all()->pluck('full_name', 'id'))
                 ])
                 ->action(function (array $data) {
@@ -151,7 +151,7 @@ class CalendarWidget extends BaseCalendarWidget
 
             return CalendarEvent::make()
                 ->key($h->id)
-                ->title($h->getAttribute('name') ?? 'Blagdan')
+                ->title($h->getAttribute('name') ?? 'Holiday')
                 ->start($start->toDateString())
                 ->end($start->toDateString())
                 ->allDay()
@@ -180,11 +180,11 @@ class CalendarWidget extends BaseCalendarWidget
                 'end' => 'resourceTimeGridDay,resourceTimelineWeek,dayGridMonth,listMonth'
             ],
             'buttonText' => [
-                'today' => 'Danas',
-                'resourceTimeGridDay' => 'Dnevni',
-                'resourceTimelineWeek' => 'Tjedni',
-                'dayGridMonth' => 'Mjesečni',
-                'listMonth' => 'Lista'
+                'today' => 'Today',
+                'resourceTimeGridDay' => 'Daily',
+                'resourceTimelineWeek' => 'Weekly',
+                'dayGridMonth' => 'Monthly',
+                'listMonth' => 'List'
             ],
             'slotDuration' => '00:15:00',
             'slotLabelInterval' => '00:15:00',
@@ -201,9 +201,9 @@ class CalendarWidget extends BaseCalendarWidget
                 ->color('danger')
                 ->modalIcon(Heroicon::MinusCircle)
                 ->icon(Heroicon::MinusCircle)
-                ->label('Blokiranje')
+                ->label('Unavailable')
                 ->model(Reservation::class)
-                ->modalHeading('Blokiranje')
+                ->modalHeading('Unavailable time')
                 ->mountUsing(function ($schema, $arguments) {
                     $date = data_get($arguments, 'data.dateStr');
                     $resourceId = data_get($arguments, 'data.resource.id');
@@ -222,9 +222,9 @@ class CalendarWidget extends BaseCalendarWidget
             CreateAction::make('createAppointment')
                 ->modalIcon(Heroicon::Calendar)
                 ->icon(Heroicon::Calendar)
-                ->label('Nova rezervacija')
+                ->label('New reservation')
                 ->model(Reservation::class)
-                ->modalHeading('Nova rezervacija')
+                ->modalHeading('New reservation')
                 ->mountUsing(function ($schema, $arguments) {
                     $date = data_get($arguments, 'data.dateStr');
                     $resourceId = data_get($arguments, 'data.resource.id');
@@ -243,30 +243,28 @@ class CalendarWidget extends BaseCalendarWidget
             $this->viewAction(),
             $this->editAction(),
             Action::make('cancel-reservation')
-                ->label('Otkazivanje rezervacije')
+                ->label('Cancel reservation')
                 ->icon(PhosphorIcons::CalendarX)
                 ->modalWidth(Width::Large)
                 ->color('danger')
-                ->modalSubmitActionLabel('Otkaži')
+                ->modalSubmitActionLabel('Cancel reservation')
                 ->modalIcon(PhosphorIcons::CalendarX)
-                ->modalHeading('Otkazivanje rezervacije')
+                ->modalHeading('Cancel reservation')
                 ->schema([
                     Textarea::make('reason')
-                        ->label('Razlog otkazivanja')
-                        ->placeholder('Unesite razlog otkazivanja')
+                        ->label('Cancel reason')
+                        ->placeholder('Enter cancel reason')
                         ->required()
                         ->rows(4),
 
                     Toggle::make('send_email')
-                        ->hint('Pošalji email klijentu o otkazivanju')
-                        ->label('Pošalji email')
+                        ->hint('Send email to client about cancellation')
+                        ->label('Send email')
 
                 ])
                 ->model(Reservation::class)
                 ->mountUsing(function ($schema, $arguments) {
-                    $appointmentId = data_get($arguments, 'data.event.extendedProps.key');
-                    //dd($appointmentId);
-                    //Otkaži rezervaciju.
+
                 })
         ];
     }
@@ -280,14 +278,14 @@ class CalendarWidget extends BaseCalendarWidget
     public function viewAction(): ViewAction
     {
         return ViewAction::make($this->view)
-            ->label('Otvori');
+            ->label('Open');
     }
 
     protected function createAction(string $model, ?string $name = null): CreateAction
     {
         return parent::createAction($model, $name)
-            ->label('Nova rezervacija')
-            ->modalHeading('Nova rezervacija')
+            ->label('New reservation')
+            ->modalHeading('New reservation')
             ->modalIcon(Heroicon::Calendar)
             ->icon(Heroicon::Calendar);
     }

@@ -15,17 +15,17 @@ class NotPayedInvoices extends ListInvoices
 
     protected string $view = 'filament.app.resources.invoices.pages.not-payed-invoices';
 
-    protected static ?string $navigationLabel = 'Neplaćeni računi';
+    protected static ?string $navigationLabel = 'Unpaid invoices';
 
     protected static string|BackedEnum|null $navigationIcon = PhosphorIcons::MoneyWavyLight;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Financije';
+    protected static string|UnitEnum|null $navigationGroup = 'Finance';
 
-    protected static ?string $navigationParentItem = 'Računi';
+    protected static ?string $navigationParentItem = 'Invoices';
 
     public function getSubheading(): string|Htmlable|null
     {
-        return 'Popis svih neplaćenih računa';
+        return 'A list of all unpaid invoices';
     }
 
     protected function getHeaderActions(): array
@@ -38,8 +38,6 @@ class NotPayedInvoices extends ListInvoices
         return parent::table($table)
             ->filters([])
             ->emptyStateActions([])
-            ->modifyQueryUsing(function ($query) {
-                return $query->notPayed();
-            });
+            ->modifyQueryUsing(fn($query) => $query->notPayed());
     }
 }

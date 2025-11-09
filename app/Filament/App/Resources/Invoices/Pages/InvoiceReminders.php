@@ -22,9 +22,9 @@ class InvoiceReminders extends ManageRelatedRecords
 
     protected static string|null|\BackedEnum $navigationIcon = Heroicon::Clock;
 
-    protected static ?string $navigationLabel = 'Podsjetnici';
+    protected static ?string $navigationLabel = 'Reminders';
 
-    protected static ?string $title = 'Podsjetnici';
+    protected static ?string $title = 'Reminders';
 
     public static function getNavigationBadge(): ?string
     {
@@ -35,7 +35,7 @@ class InvoiceReminders extends ManageRelatedRecords
 
     public function getSubheading(): string|Htmlable|null
     {
-        return 'Račun: ' . $this->getRecord()->code;
+        return 'Invoice: ' . $this->getRecord()->code;
     }
 
     protected function getHeaderActions(): array

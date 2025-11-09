@@ -16,7 +16,7 @@ class CreateInvoice extends CreateRecord
 
     public ?Collection $medicalDocumentItems;
 
-    protected static ?string $title = 'Novi račun';
+    protected static ?string $title = 'New invoice';
 
     protected function handleRecordCreation(array $data): Model
     {

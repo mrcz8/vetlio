@@ -26,16 +26,16 @@ class ViewInvoice extends ViewRecord
 
     protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::End;
 
-    protected static ?string $navigationLabel = 'Račun';
+    protected static ?string $navigationLabel = 'Invoice';
 
     public function getTitle(): string
     {
-        return 'Račun: ' . $this->getRecord()->code;
+        return 'Invoice: ' . $this->getRecord()->code;
     }
 
     public function getSubheading(): string|Htmlable|null
     {
-        return 'Klijent: ' . $this->getRecord()->client->full_name;
+        return 'Client: ' . $this->getRecord()->client->full_name;
     }
 
     public function sendInvoiceByEmailAction(): SendEmailAction
@@ -43,14 +43,14 @@ class ViewInvoice extends ViewRecord
         return SendEmailAction::make()
             ->fillForm(function ($data) {
                 $data['receivers'] = [$this->getRecord()->client->email];
-                $data['subject'] = 'Vaša faktura: ' . $this->getRecord()->code;
-                $data['body'] = 'U privitku Vam dostavljamo fakturu. Ukupan iznos je: ' . Number::currency($this->getRecord()->total) . '';
+                $data['subject'] = 'Your invoice: ' . $this->getRecord()->code;
+                $data['body'] = 'Please find attached your invoice. The total amount is: ' . Number::currency($this->getRecord()->total) . '.';
                 return $data;
             })
             ->outlined()
             ->hiddenLabel()
-            ->subject('Vaša faktura')
-            ->label('Pošalji email')
+            ->subject('Your invoice')
+            ->label('Send email')
             ->icon(PhosphorIcons::Envelope);
     }
 
@@ -58,86 +58,71 @@ class ViewInvoice extends ViewRecord
     {
         return [
             Action::make('cancel')
-                ->hidden(function ($record) {
-                    return $record->storno_of_id != null;
-                })
-                ->label('Storniraj')
+                ->hidden(fn($record) => $record->storno_of_id != null)
+                ->label('Cancel invoice')
                 ->requiresConfirmation()
                 ->icon(PhosphorIcons::Invoice)
                 ->color('danger')
-                ->successNotificationTitle('Račun je uspješno storniran')
-                ->successRedirectUrl(function ($record) {
-                    return InvoiceResource::getUrl('view', ['record' => $record->canceledInvoice]);
-                })
-                ->action(function ($record, Action $action) {
-                    app(InvoiceService::class)->cancelInvoice($record);
-                }),
+                ->successNotificationTitle('The invoice was successfully canceled')
+                ->successRedirectUrl(fn($record) => InvoiceResource::getUrl('view', ['record' => $record->canceledInvoice]))
+                ->action(fn($record, Action $action) => app(InvoiceService::class)->cancelInvoice($record)),
+
             ActionGroup::make([
                 Action::make('print')
-                    ->label('Ispis')
+                    ->label('Print')
                     ->outlined()
-                    ->url(function (Invoice $record) {
-                        return route('print.invoices.inline', ['record' => $record]);
-                    })
+                    ->url(fn(Invoice $record) => route('print.invoices.inline', ['record' => $record]))
                     ->icon(PhosphorIcons::Printer)
                     ->openUrlInNewTab(),
 
                 Action::make('pdf')
-                    ->label('Otvori PDF')
+                    ->label('Open PDF')
                     ->outlined()
-                    ->url(function (Invoice $record) {
-                        return route('print.invoices.download', ['record' => $record]);
-                    })
-                    ->icon(PhosphorIcons::Printer)
-                    ->openUrlInNewTab()
-                    ->icon(PhosphorIcons::FilePdfFill),
+                    ->url(fn(Invoice $record) => route('print.invoices.download', ['record' => $record]))
+                    ->icon(PhosphorIcons::FilePdfFill)
+                    ->openUrlInNewTab(),
 
                 Action::make('download-pdf')
-                    ->label('Preuzmi PDF')
+                    ->label('Download PDF')
                     ->outlined()
                     ->schema([
-                        TextInput::make('code')
+                        TextInput::make('code'),
                     ])
-                    ->action(function () {
-                        dd("radim print...");
-                    })
+                    ->action(fn() => dd('Generating print...'))
                     ->icon(PhosphorIcons::Download),
-            ])->hiddenLabel()->icon(Heroicon::Printer)->button()->outlined(),
+            ])
+                ->hiddenLabel()
+                ->icon(Heroicon::Printer)
+                ->button()
+                ->outlined(),
 
             $this->sendInvoiceByEmailAction(),
 
             ActionGroup::make([
                 ClientCardAction::make()
                     ->record($this->getRecord()->client),
-            ])->label('Više')->button()->outlined(),
+            ])->label('More')->button()->outlined(),
 
             Action::make('createPayment')
-                ->label('Dodaj uplatu')
+                ->label('Add payment')
                 ->color('success')
                 ->icon(PhosphorIcons::CreditCard)
                 ->modalIcon(PhosphorIcons::CreditCard)
-                ->modalHeading('Uplata na račun')
+                ->modalHeading('Payment for invoice')
                 ->model(Payment::class)
-                ->schema(function ($schema) {
-                    return PaymentForm::configure($schema)->columns(2);
-                })
+                ->schema(fn($schema) => PaymentForm::configure($schema)->columns(2))
                 ->fillForm(function ($data) {
                     $data['payment_at'] = now();
                     $data['client_id'] = $this->getRecord()->client_id;
                     $data['branch_id'] = $this->getRecord()->branch_id;
                     $data['amount'] = $this->getRecord()->total;
                     $data['payment_method_id'] = PaymentMethod::BANK;
-                    $data['note'] = 'Uplata za račun: ' . $this->getRecord()->code;
-
+                    $data['note'] = 'Payment for invoice: ' . $this->getRecord()->code;
                     return $data;
                 })
-                ->successNotificationTitle('Uplata uspješno dodana')
-                ->action(function ($record, $data) {
-                    $record->payments()->create($data);
-                })
-                ->visible(function ($record) {
-                    return !$record->payed;
-                }),
+                ->successNotificationTitle('Payment added successfully')
+                ->action(fn($record, $data) => $record->payments()->create($data))
+                ->visible(fn($record) => !$record->payed),
         ];
     }
 }

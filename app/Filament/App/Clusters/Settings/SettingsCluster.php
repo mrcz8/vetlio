@@ -10,7 +10,7 @@ class SettingsCluster extends Cluster
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Cog;
 
-    protected static ?string $title = 'Postavke';
+    protected static ?string $title = 'Settings';
 
-    protected static ?string $navigationLabel = 'Postavke';
+    protected static ?string $navigationLabel = 'Settings';
 }

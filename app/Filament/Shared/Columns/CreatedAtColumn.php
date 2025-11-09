@@ -11,7 +11,7 @@ class CreatedAtColumn extends TextColumn
         parent::setUp();
 
         $this->name('created_at');
-        $this->label('Datum kreiranja');
+        $this->label(__('tables.columns.created_at'));
         $this->dateTime();
         $this->sortable();
         $this->toggleable(isToggledHiddenByDefault: true);

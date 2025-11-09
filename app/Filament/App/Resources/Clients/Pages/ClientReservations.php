@@ -26,9 +26,9 @@ class ClientReservations extends ManageRelatedRecords
 
     protected static string|BackedEnum|null $navigationIcon = PhosphorIcons::CalendarPlus;
 
-    protected static ?string $title = 'Narudžbe';
+    protected static ?string $title = 'Reservations';
 
-    protected static ?string $navigationLabel = 'Narudžbe';
+    protected static ?string $navigationLabel = 'Reservations';
 
     protected function getHeaderActions(): array
     {
@@ -77,16 +77,16 @@ class ClientReservations extends ManageRelatedRecords
                     return $this->getRecord()->reservations_count;
                 })
                 ->icon(PhosphorIcons::Calendar)
-                ->label('Sve'),
+                ->label('All'),
             'active' => Tab::make()
-                ->label('Aktivne')
+                ->label('Active')
                 ->badge(function (Builder $query) {
                     return $this->getRecord()->reservations()->whereCanceled(false)->count();
                 })
                 ->icon(PhosphorIcons::CalendarCheck)
                 ->modifyQueryUsing(fn(Builder $query) => $query->where('canceled', false)),
             'canceled' => Tab::make()
-                ->label('Otkazane')
+                ->label('Canceled')
                 ->badgeColor('danger')
                 ->badge(function (Builder $query) {
                     return $this->getRecord()->reservations()->whereCanceled(true)->count();

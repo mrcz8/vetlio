@@ -5,11 +5,7 @@ namespace App\Filament\App\Resources\Invoices\Schemas;
 use App\Enums\Icons\PhosphorIcons;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use chillerlan\QRCode\QRCode;
-use chillerlan\QRCode\QROptions;
-use chillerlan\QRCode\QROptionsTrait;
 use CodeWithDennis\SimpleAlert\Components\SimpleAlert;
-use Endroid\QrCode\ErrorCorrectionLevel;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -22,7 +18,9 @@ use Filament\Support\Enums\TextSize;
 use Illuminate\Support\HtmlString;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
 use Endroid\QrCode\Writer\PngWriter;
+
 class InvoiceInfolist
 {
     public static function configure(Schema $schema): Schema
@@ -39,23 +37,22 @@ class InvoiceInfolist
                                 static::getOrganisationInformationBlock(),
                                 static::getClientInformationBlock()
                                     ->columnStart(3),
-                                static::invoiceInformation()
+                                static::invoiceInformation(),
                             ]),
 
-
                         RepeatableEntry::make('invoiceItems')
-                            ->label('Stavke računa')
+                            ->label('Invoice items')
                             ->table([
                                 TableColumn::make('#')
                                     ->width('50px')
                                     ->alignCenter(),
-                                TableColumn::make('Stavka'),
-                                TableColumn::make('Količina')
+                                TableColumn::make('Item'),
+                                TableColumn::make('Quantity')
                                     ->alignEnd(),
-                                TableColumn::make('Cijena')
+                                TableColumn::make('Price')
                                     ->alignEnd(),
-                                TableColumn::make('Ukupno')
-                                    ->alignEnd()
+                                TableColumn::make('Total')
+                                    ->alignEnd(),
                             ])
                             ->schema([
                                 TextEntry::make('id')
@@ -64,7 +61,8 @@ class InvoiceInfolist
                                 TextEntry::make('name')
                                     ->html()
                                     ->formatStateUsing(function (InvoiceItem $record) {
-                                        return str(new HtmlString("{$record->name}"))->append('</br>' . $record->description);
+                                        return str(new HtmlString("{$record->name}"))
+                                            ->append('</br>' . $record->description);
                                     }),
                                 TextEntry::make('quantity')
                                     ->alignEnd(),
@@ -81,22 +79,18 @@ class InvoiceInfolist
                             ->columnSpanFull()
                             ->schema([
                                 ImageEntry::make('qrcode')
-                                    ->visible(function (Invoice $record) {
-                                        return $record->fiscalization_at;
-                                    })
+                                    ->visible(fn(Invoice $record) => $record->fiscalization_at)
                                     ->hiddenLabel()
                                     ->columnSpan(1)
-                                    ->label('QR kod'),
-                                static::invoiceTotals()
+                                    ->label('QR Code'),
+                                static::invoiceTotals(),
                             ]),
 
                         TextEntry::make('terms_and_conditions')
-                            ->label('Uvjeti i odredbe')
-                            ->visible(function (Invoice $record) {
-                                return $record->terms_and_conditions;
-                            })
+                            ->label('Terms and conditions')
+                            ->visible(fn(Invoice $record) => $record->terms_and_conditions)
                             ->columnSpanFull(),
-                    ])
+                    ]),
             ]);
     }
 
@@ -106,9 +100,7 @@ class InvoiceInfolist
             ->gap(false)
             ->schema([
                 TextEntry::make('code')
-                    ->extraAttributes([
-                        'class' => 'mb-2'
-                    ])
+                    ->extraAttributes(['class' => 'mb-2'])
                     ->hiddenLabel()
                     ->weight(FontWeight::Bold)
                     ->color('info')
@@ -125,7 +117,7 @@ class InvoiceInfolist
                     ->size(TextSize::Small)
                     ->state(function (Invoice $record) {
                         return $record->organisation->city . ', ' . $record->organisation->zip_code;
-                    })
+                    }),
             ]);
     }
 
@@ -135,7 +127,7 @@ class InvoiceInfolist
             ->gap(false)
             ->schema([
                 TextEntry::make('code')
-                    ->state('Za klijenta')
+                    ->state('For client')
                     ->hiddenLabel()
                     ->alignEnd()
                     ->weight(FontWeight::Bold),
@@ -148,62 +140,52 @@ class InvoiceInfolist
 
                 TextEntry::make('client.address')
                     ->hiddenLabel()
-                    ->extraAttributes([
-                        'class' => 'text-right'
-                    ])
+                    ->extraAttributes(['class' => 'text-right'])
                     ->size(TextSize::Small),
 
                 TextEntry::make('client.city')
-                    ->extraAttributes([
-                        'class' => 'text-right'
-                    ])
+                    ->extraAttributes(['class' => 'text-right'])
                     ->hiddenLabel()
                     ->size(TextSize::Small)
                     ->state(function (Invoice $record) {
                         return $record->client->city . ', ' . $record->client->zip_code;
-                    })
+                    }),
             ]);
     }
 
     private static function invoiceInformation()
     {
         return Grid::make(1)
-            ->extraAttributes([
-                'class' => 'text-right'
-            ])
+            ->extraAttributes(['class' => 'text-right'])
             ->columnStart(3)
             ->columnSpan(2)
             ->gap(false)
             ->schema([
                 TextEntry::make('invoice_date')
-                    ->label('Datum računa:')
+                    ->label('Invoice date:')
                     ->inlineLabel()
                     ->dateTime('d.m.Y H:i')
                     ->weight(FontWeight::SemiBold),
 
                 TextEntry::make('payment_method_id')
-                    ->label('Način plaćanja')
+                    ->label('Payment method')
                     ->inlineLabel()
                     ->weight(FontWeight::SemiBold),
 
                 TextEntry::make('user.full_name')
-                    ->label('Izradio:')
+                    ->label('Created by:')
                     ->inlineLabel()
                     ->weight(FontWeight::SemiBold),
 
                 TextEntry::make('zki')
                     ->label('ZKI:')
-                    ->visible(function (Invoice $record) {
-                        return $record->fiscalization_at;
-                    })
+                    ->visible(fn(Invoice $record) => $record->fiscalization_at)
                     ->inlineLabel()
                     ->weight(FontWeight::SemiBold),
 
                 TextEntry::make('jir')
                     ->label('JIR:')
-                    ->visible(function (Invoice $record) {
-                        return $record->fiscalization_at;
-                    })
+                    ->visible(fn(Invoice $record) => $record->fiscalization_at)
                     ->inlineLabel()
                     ->weight(FontWeight::SemiBold),
             ]);
@@ -212,15 +194,12 @@ class InvoiceInfolist
     private static function canceledInvoiceAlert()
     {
         return SimpleAlert::make('canceled-invoice')
-            ->visible(function ($record) {
-                return $record->storno_of_id != null;
-            })
+            ->visible(fn($record) => $record->storno_of_id != null)
             ->icon(PhosphorIcons::Invoice)
             ->danger()
             ->border()
-            ->title('Ovo je stornirani račun')
+            ->title('This is a canceled invoice')
             ->columnSpanFull();
-
     }
 
     private static function invoiceTotals()
@@ -232,57 +211,40 @@ class InvoiceInfolist
             ->schema([
                 TextEntry::make('total_base_price')
                     ->money('EUR')
-                    ->label('Osnovica')
+                    ->label('Base amount')
                     ->alignRight()
                     ->columnStart(3)
                     ->inlineLabel()
                     ->weight(FontWeight::Bold)
                     ->alignEnd(),
+
                 TextEntry::make('total_tax')
                     ->money('EUR')
-                    ->label('Ukupno PDV')
+                    ->label('Total VAT')
                     ->alignRight()
                     ->columnStart(3)
                     ->inlineLabel()
                     ->weight(FontWeight::Bold)
                     ->alignEnd(),
+
                 TextEntry::make('total_discount')
                     ->money('EUR')
-                    ->label('Ukupan popust')
+                    ->label('Total discount')
                     ->alignRight()
                     ->columnStart(3)
                     ->inlineLabel()
                     ->weight(FontWeight::Bold)
                     ->alignEnd(),
+
                 TextEntry::make('total')
                     ->alignRight()
                     ->inlineLabel()
                     ->columnStart(3)
                     ->size(TextSize::Large)
                     ->money('EUR')
-                    ->label(new HtmlString('<span class="text-lg">Sveukupno:</span>'))
-                    ->extraAttributes([
-                        'class' => 'text-lg'
-                    ])
+                    ->label(new HtmlString('<span class="text-lg">Grand total:</span>'))
+                    ->extraAttributes(['class' => 'text-lg'])
                     ->weight(FontWeight::Bold),
             ]);
-    }
-
-    private function generate2dBarcode() {
-        $payload = implode("\n", [
-            'HRVHUB30',          // identifikator formata
-            'EUR',
-            str_pad(number_format(200, 2, '', ''), /*npr.*/15, '0', STR_PAD_LEFT),
-            'test',
-        ]);
-
-        $result = Builder::create()
-            ->writer(new PngWriter())
-            ->data($payload)
-            ->encoding(new Encoding('UTF-8'))
-            ->errorCorrectionLevel(ErrorCorrectionLevel::Medium)
-            ->size(300)
-            ->margin(10)
-            ->build();
     }
 }

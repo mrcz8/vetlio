@@ -22,9 +22,9 @@ class ClientTasks extends ManageRelatedRecords
 
     protected static string|BackedEnum|null $navigationIcon = PhosphorIcons::TagSimple;
 
-    protected static ?string $navigationLabel = 'Zadaci';
+    protected static ?string $navigationLabel = 'Tasks';
 
-    protected static ?string $title = 'Zadaci';
+    protected static ?string $title = 'Tasks';
 
     public function getSubheading(): string|Htmlable|null
     {

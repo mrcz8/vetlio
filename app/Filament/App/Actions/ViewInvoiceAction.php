@@ -11,12 +11,12 @@ class ViewInvoiceAction
     public static function make()
     {
         return Action::make('view-invoice')
-            ->tooltip('Prikaži račun')
+            ->tooltip('View invoice')
             ->url(function ($record) {
                 return InvoiceResource::getUrl('view', ['record' => $record]);
             })
             ->outlined()
-            ->label('Račun')
+            ->label('Invoice')
             ->icon(PhosphorIcons::InvoiceLight);
     }
 }

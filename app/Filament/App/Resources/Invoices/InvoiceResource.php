@@ -36,15 +36,15 @@ class InvoiceResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'code';
 
-    protected static ?string $navigationLabel = 'Računi';
+    protected static ?string $navigationLabel = 'Invoices';
 
-    protected static ?string $label = 'račun';
+    protected static ?string $label = 'invoice';
 
-    protected static ?string $pluralLabel = 'računi';
+    protected static ?string $pluralLabel = 'invoices';
 
     protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Financije';
+    protected static string|UnitEnum|null $navigationGroup = 'Finance';
 
     public static function getGloballySearchableAttributes(): array
     {
@@ -64,8 +64,8 @@ class InvoiceResource extends Resource
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'Klijent' => $record->client->full_name,
-            'Ukupan iznos' => Number::format($record->total) ?? '-',
+            'Client' => $record->client->full_name,
+            'Total amount' => Number::format($record->total) ?? '-',
         ];
     }
 

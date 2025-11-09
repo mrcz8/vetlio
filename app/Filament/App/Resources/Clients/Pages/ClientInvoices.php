@@ -19,11 +19,11 @@ class ClientInvoices extends ManageRelatedRecords
 
     protected static ?string $relatedResource = InvoiceResource::class;
 
-    protected static ?string $navigationLabel = 'Računi';
+    protected static ?string $navigationLabel = 'Invoices';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Financije';
+    protected static string|UnitEnum|null $navigationGroup = 'Finance';
 
-    protected static ?string $title = 'Računi';
+    protected static ?string $title = 'Invoices';
 
     protected static string|BackedEnum|null $navigationIcon = PhosphorIcons::Money;
 

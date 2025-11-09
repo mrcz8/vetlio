@@ -19,9 +19,9 @@ class MedicalDocumentPastItems extends ManageRelatedRecords
 
     protected static ?string $relatedResource = MedicalDocumentResource::class;
 
-    protected static ?string $title = 'Prethodni nalazi';
+    protected static ?string $title = 'Previous Medical Reports';
 
-    protected static ?string $navigationLabel = 'Prethodni nalazi';
+    protected static ?string $navigationLabel = 'Previous Reports';
 
     public static function getNavigationBadge(): ?string
     {
@@ -34,6 +34,6 @@ class MedicalDocumentPastItems extends ManageRelatedRecords
     {
         return $table
             ->emptyStateActions([])
-            ->emptyStateDescription('Trenutno nema prethodnih nalaza');
+            ->emptyStateDescription('There are no previous medical reports at the moment.');
     }
 }

@@ -18,13 +18,13 @@ class InvoiceSettings extends Page
 
     protected static ?string $cluster = SettingsCluster::class;
 
-    protected static ?string $navigationLabel = 'Računi';
+    protected static ?string $navigationLabel = 'Invoices';
 
-    protected static ?string $title = 'Postavke računa';
+    protected static ?string $title = 'Invoice settings';
 
     protected static string|null|\BackedEnum $navigationIcon = PhosphorIcons::Money;
 
-    protected static string|null|\UnitEnum $navigationGroup = 'Financije';
+    protected static string|null|\UnitEnum $navigationGroup = 'Finance';
 
     public ?array $data = [];
 
@@ -39,13 +39,12 @@ class InvoiceSettings extends Page
     {
         return $schema
             ->components([
-                Form::make([
-
-                ])->livewireSubmitHandler('save')
+                Form::make([])
+                    ->livewireSubmitHandler('save')
                     ->footer([
                         Actions::make([
                             Action::make('save')
-                                ->label('Spremi')
+                                ->label('Save')
                                 ->icon(PhosphorIcons::Check)
                                 ->submit('save')
                                 ->keyBindings(['mod+s']),
@@ -61,7 +60,7 @@ class InvoiceSettings extends Page
         $data = $this->form->getState();
 
         collect($data)->each(function ($value, $key) use (&$data) {
-            $this->getRecord()->settings()->update("offer", $data);
+            $this->getRecord()->settings()->update('offer', $data);
         });
 
         Notification::make()
@@ -74,5 +73,4 @@ class InvoiceSettings extends Page
     {
         return auth()->user()->organisation()->first();
     }
-
 }

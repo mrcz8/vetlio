@@ -35,13 +35,13 @@ class FiscalisationSettings extends Page
 
     protected static ?string $cluster = SettingsCluster::class;
 
-    protected static ?string $navigationLabel = 'Fiskalizacija';
+    protected static ?string $navigationLabel = 'Fiscalisation';
 
-    protected static ?string $title = 'Podaci o fiskalizaciji';
+    protected static ?string $title = 'Fiscalisation details';
 
     protected static string|BackedEnum|null $navigationIcon = PhosphorIcons::Invoice;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Financije';
+    protected static string|UnitEnum|null $navigationGroup = 'Finance';
 
     public ?array $data = [];
 
@@ -57,22 +57,21 @@ class FiscalisationSettings extends Page
         return $schema
             ->components([
                 Form::make([
-                    Section::make('Fiskalizacija')
+                    Section::make('Fiscalisation')
                         ->columns(2)
                         ->headerActions([
                             Action::make('test-connection')
                                 ->disabled(function (Get $get) {
                                     return !$get('certificate_path') || !$get('certificate_password');
                                 })
-                                ->label('Testiraj certifikat')
+                                ->label('Test certificate')
                                 ->link()
                                 ->icon(PhosphorIcons::Check)
-                                ->successNotificationTitle('Certifikat je uspješno validiran.')
-                                ->failureNotificationTitle('Greška kod testiranja certifikata.')
+                                ->successNotificationTitle('The certificate has been successfully validated.')
+                                ->failureNotificationTitle('Error testing the certificate.')
                                 ->action(function (Action $action, Get $get, Set $set) {
                                     if (!$get('certificate_path') || !$get('certificate_password')) {
                                         $action->failure();
-
                                         return;
                                     }
 
@@ -107,10 +106,10 @@ class FiscalisationSettings extends Page
                                 })
                                 ->inline(false)
                                 ->live(true)
-                                ->label('Omogući fiskalizaciju'),
+                                ->label('Enable fiscalisation'),
 
                             ToggleButtons::make('fiscalization_demo')
-                                ->label('DEMO fiskalizacija')
+                                ->label('Demo fiscalisation')
                                 ->inline()
                                 ->boolean()
                                 ->default(true)
@@ -124,46 +123,49 @@ class FiscalisationSettings extends Page
                                     'application/x-pkcs12-certificates',
                                     '.p12',
                                     '.pfx',
-                                ])->moveFiles()
+                                ])
+                                ->moveFiles()
                                 ->storeFileNamesIn('certificate_path')
                                 ->preserveFilenames()
                                 ->required(fn($get) => $get('fiscalization_enabled'))
-                                ->label('Certifikat'),
+                                ->label('Certificate'),
 
                             TextInput::make('certificate_password')
                                 ->password()
                                 ->live()
                                 ->required(fn($get) => $get('fiscalization_enabled'))
                                 ->readOnly(fn($get) => !$get('fiscalization_enabled'))
-                                ->label('Lozinka'),
+                                ->label('Password'),
 
                             Select::make('sequence_mark')
-                                ->label('Oznaka sljednosti')
+                                ->label('Sequence mark')
                                 ->required(fn($get) => $get('fiscalization_enabled'))
                                 ->visible(fn($get) => $get('fiscalization_enabled'))
                                 ->options([
-                                    'P' => 'P - Poslovni prostor',
-                                    'N' => 'N - Naplatni uređaj'
+                                    'P' => 'P - Business location',
+                                    'N' => 'N - Register device',
                                 ]),
 
-                            Fieldset::make('Podaci o certifikatu')
+                            Fieldset::make('Certificate details')
                                 ->columnSpanFull()
                                 ->columns(1)
                                 ->visible(fn($get) => $get('fiscalization_enabled'))
                                 ->schema([
                                     SimpleAlert::make('certificate-info')
                                         ->columnSpanFull()
-                                        ->title('Podaci o certifikatu')
+                                        ->title('Certificate information')
                                         ->border()
                                         ->icon(PhosphorIcons::Info)
                                         ->description(function ($get) {
                                             $validTo = $get('certificate_valid_to') ? Carbon::parse($get('certificate_valid_to')) : null;
 
                                             if ($validTo) {
-                                                return "Certifikat je validan do {$validTo->format('d.m.Y')}";
+                                                return "The certificate is valid until {$validTo->format('d.m.Y')}";
                                             }
-                                            return "Certifikat nije validan";
-                                        })->color(function ($get) {
+
+                                            return "The certificate is not valid";
+                                        })
+                                        ->color(function ($get) {
                                             $validTo = $get('certificate_valid_to') ? Carbon::parse($get('certificate_valid_to')) : null;
                                             return $validTo ? 'success' : 'danger';
                                         }),
@@ -171,7 +173,7 @@ class FiscalisationSettings extends Page
                                     DatePicker::make('certificate_valid_to')
                                         ->readOnly()
                                         ->format('d.m.Y')
-                                        ->label('Datum isteka'),
+                                        ->label('Expiration date'),
 
                                     KeyValue::make('certificate_details')
                                         ->deletable(false)
@@ -179,14 +181,15 @@ class FiscalisationSettings extends Page
                                         ->addable(false)
                                         ->editableValues(false)
                                         ->editableKeys(false)
-                                        ->label('Podaci o certifikatu'),
-                                ])
-                        ])
-                ])->livewireSubmitHandler('save')
+                                        ->label('Certificate details'),
+                                ]),
+                        ]),
+                ])
+                    ->livewireSubmitHandler('save')
                     ->footer([
                         Actions::make([
                             Action::make('save')
-                                ->label('Spremi')
+                                ->label('Save')
                                 ->icon(PhosphorIcons::Check)
                                 ->submit('save')
                                 ->keyBindings(['mod+s']),
@@ -239,6 +242,7 @@ class FiscalisationSettings extends Page
                     : [$k => $v];
             })->toArray();
         }
+
         return [];
     }
 }

@@ -20,7 +20,7 @@ class PatientCardAction
                 $action->redirect(PatientResource::getUrl('view', ['record' => $record]));
             })
             ->outlined()
-            ->label('Karton pacijenta')
+            ->label('Patient card')
             ->icon(PhosphorIcons::Dog);
     }
 }

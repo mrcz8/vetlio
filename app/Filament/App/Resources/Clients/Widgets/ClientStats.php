@@ -25,19 +25,19 @@ class ClientStats extends StatsOverviewWidget
         $totalToPay = $this->client->itemsToPay()->sum('total');
 
         return [
-            Stat::make('Prethodni dolazak', $previousReservation?->date->diffForHumans() ?? ' - ')
-                ->description($previousReservation?->date->format('d.m.Y') ?? 'Nema prethodnog dolazaka')
+            Stat::make('Previous visit', $previousReservation?->date->diffForHumans() ?? ' - ')
+                ->description($previousReservation?->date->format('d.m.Y') ?? 'No previous visits')
                 ->icon(PhosphorIcons::CalendarMinus)
                 ->color('info'),
 
-            Stat::make('Sljedeći dolazak', $nextReservation?->date->diffForHumans() ?? ' - ')
-                ->description($nextReservation?->date->format('d.m.Y') ?? 'Nema sljedećeg dolazaka')
+            Stat::make('Next visit', $nextReservation?->date->diffForHumans() ?? ' - ')
+                ->description($nextReservation?->date->format('d.m.Y') ?? 'No upcoming visits')
                 ->icon(PhosphorIcons::CalendarPlus)
                 ->color('success'),
 
-            Stat::make('Nenaplaćeni iznos', Number::currency($totalToPay / 100))
+            Stat::make('Unpaid amount', Number::currency($totalToPay / 100))
                 ->icon(PhosphorIcons::Money)
-                ->description('Ukupno dugovanje klijenta')
+                ->description('Total client balance due')
                 ->color('danger'),
         ];
     }

@@ -22,15 +22,15 @@ class ClientPayments extends ManageRelatedRecords
 
     protected static string|BackedEnum|null $navigationIcon = PhosphorIcons::CurrencyEur;
 
-    protected static ?string $title = 'Uplate';
+    protected static ?string $title = 'Payments';
 
-    protected static ?string $navigationLabel = 'Uplate';
+    protected static ?string $navigationLabel = 'Payments';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Financije';
+    protected static string|UnitEnum|null $navigationGroup = 'Finance';
 
     public function getTablePluralModelLabel(): ?string
     {
-        return 'uplate';
+        return 'payments';
     }
 
     public function getSubheading(): string|Htmlable|null

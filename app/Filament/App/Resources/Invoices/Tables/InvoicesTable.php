@@ -25,110 +25,104 @@ class InvoicesTable
             ->columns([
                 TextColumn::make('code')
                     ->sortable()
-                    ->icon(function($record) {
-                        return $record->fiscalization_at ? PhosphorIcons::CheckCircleBold : PhosphorIcons::XCircleBold;
+                    ->icon(function ($record) {
+                        return $record->fiscalization_at
+                            ? PhosphorIcons::CheckCircleBold
+                            : PhosphorIcons::XCircleBold;
                     })
-                    ->iconColor(function($record) {
+                    ->iconColor(function ($record) {
                         return $record->fiscalization_at ? 'success' : 'danger';
                     })
-                    ->tooltip(function($record) {
-                        return $record->fiscalization_at ? 'Račun je uspješno fiskaliziran' : 'Račun nije fiskaliziran';
+                    ->tooltip(function ($record) {
+                        return $record->fiscalization_at
+                            ? 'Invoice successfully fiscalized'
+                            : 'Invoice not fiscalized';
                     })
                     ->searchable()
-                    ->label('Šifra'),
+                    ->label('Code'),
 
                 TextColumn::make('branch.name')
                     ->sortable()
                     ->searchable()
-                    ->label('Poslovnica'),
+                    ->label('Branch'),
 
                 TextColumn::make('client.full_name')
                     ->sortable()
                     ->searchable()
-                    ->label('Klijent')
+                    ->label('Client')
                     ->icon(PhosphorIcons::User),
 
                 TextColumn::make('invoice_date')
                     ->sortable()
-                    ->sortable()
                     ->date()
-                    ->label('Datum računa'),
+                    ->label('Invoice date'),
 
                 TextColumn::make('payment_method_id')
                     ->sortable()
-                    ->label('Način plaćanja'),
+                    ->label('Payment method'),
 
                 TextColumn::make('user.full_name')
                     ->sortable()
                     ->searchable()
-                    ->sortable()
-                    ->label('Kreirao'),
+                    ->label('Created by'),
 
                 TextColumn::make('total_base_price')
-                    ->label('Osnovica')
+                    ->label('Base amount')
                     ->numeric(2)
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable()
                     ->suffix(' EUR')
-                    ->color(function ($record) {
-                        return $record->storno_of_id ? 'danger' : null;
-                    }),
+                    ->color(fn($record) => $record->storno_of_id ? 'danger' : null),
 
                 TextColumn::make('total_tax')
-                    ->label('PDV iznos')
+                    ->label('VAT amount')
                     ->numeric(2)
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->suffix(' EUR')
-                    ->color(function ($record) {
-                        return $record->storno_of_id ? 'danger' : null;
-                    }),
+                    ->color(fn($record) => $record->storno_of_id ? 'danger' : null),
 
                 TextColumn::make('total_discount')
-                    ->label('Popust')
+                    ->label('Discount')
                     ->numeric(2)
                     ->sortable()
                     ->suffix(' EUR')
-                    ->color(function ($record) {
-                        return $record->storno_of_id ? 'danger' : null;
-                    }),
+                    ->color(fn($record) => $record->storno_of_id ? 'danger' : null),
 
                 TextColumn::make('total')
-                    ->label('Ukupno')
+                    ->label('Total')
                     ->numeric(2)
                     ->sortable()
                     ->suffix(' EUR')
-                    ->color(function ($record) {
-                        return $record->storno_of_id ? 'danger' : null;
-                    })
+                    ->color(fn($record) => $record->storno_of_id ? 'danger' : null)
                     ->weight(FontWeight::Bold),
 
                 CreatedAtColumn::make('created_at'),
             ])
             ->filters([
                 TernaryFilter::make('storno_of_id')
-                    ->label('Stornirani')
+                    ->label('Cancelled')
                     ->nullable(),
 
                 SelectFilter::make('payment_method_id')
-                    ->label('Način plaćanja')
+                    ->label('Payment method')
                     ->native(false)
                     ->multiple()
                     ->options(PaymentMethod::class),
 
                 SelectFilter::make('user_id')
                     ->multiple()
-                    ->label('Izradio')
+                    ->label('Created by')
                     ->relationship('user', 'first_name')
                     ->getOptionLabelFromRecordUsing(fn(User $record) => $record->full_name)
                     ->native(false),
 
                 SelectFilter::make('client_id')
                     ->multiple()
-                    ->label('Klijent')
+                    ->label('Client')
                     ->relationship('client', 'first_name')
                     ->getOptionLabelFromRecordUsing(fn(Client $record) => $record->full_name)
-                    ->native(false)
+                    ->native(false),
             ], layout: FiltersLayout::Modal)
             ->filtersTriggerAction(
                 fn(Action $action) => $action
@@ -137,7 +131,7 @@ class InvoicesTable
             )
             ->recordActions([
                 ViewAction::make(),
-                ClientCardAction::make()
+                ClientCardAction::make(),
             ]);
     }
 }

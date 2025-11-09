@@ -17,23 +17,23 @@ class RemindersTable
         return $table
             ->columns([
                 TextColumn::make('title')
-                    ->label('Naslov')
+                    ->label('Title')
                     ->searchable(),
 
                 TextColumn::make('remind_at')
-                    ->label('Datum i vrijeme podsjetnika')
+                    ->label('Reminder date and time')
                     ->dateTime('d.m.Y H:i'),
 
                 TextColumn::make('userToRemind.full_name')
-                    ->label('Podsjetnik za'),
+                    ->label('Remind user'),
 
                 IconColumn::make('send_email')
                     ->alignCenter()
-                    ->label('Pošalji mail')
+                    ->label('Send email')
                     ->boolean(),
 
                 IconColumn::make('email_sent_at')
-                    ->label('Obaviješten?')
+                    ->label('Notified?')
                     ->tooltip(function (Reminder $reminder) {
                         if ($reminder->email_sent_at) {
                             return $reminder->email_sent_at->format('d.m.Y H:i');
@@ -51,10 +51,10 @@ class RemindersTable
             ->recordActions([
                 EditAction::make()
                     ->visible(function (Reminder $record) {
-                        return !$record->isNotified();
+                        return ! $record->isNotified();
                     }),
 
-                DeleteAction::make()
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

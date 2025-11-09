@@ -19,27 +19,25 @@ class DocumentsTable
             ->columns([
                 TextColumn::make('title')
                     ->sortable()
-                    ->description(function (Document $record) {
-                        return $record->description;
-                    })
-                    ->label('Naziv')
+                    ->description(fn (Document $record) => $record->description)
+                    ->label('Title')
                     ->searchable(),
 
                 TextColumn::make('creator.full_name')
-                    ->label('Dodao'),
+                    ->label('Added by'),
 
                 ToggleColumn::make('visible_in_portal')
-                    ->label('Prikaz u portalu'),
+                    ->label('Visible in portal'),
 
                 TextColumn::make('media_count')
                     ->icon(Heroicon::PaperClip)
                     ->counts('media')
                     ->badge()
-                    ->label('Broj datoteka'),
+                    ->label('File count'),
 
                 TextColumn::make('created_at')
-                    ->label('Datum kreiranja')
-                    ->dateTime()
+                    ->label('Created at')
+                    ->dateTime(),
             ])
             ->filters([
                 //
@@ -49,7 +47,7 @@ class DocumentsTable
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make()
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

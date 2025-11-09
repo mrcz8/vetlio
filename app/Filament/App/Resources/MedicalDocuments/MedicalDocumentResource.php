@@ -31,11 +31,11 @@ class MedicalDocumentResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'code';
 
-    protected static ?string $navigationLabel = 'Medicinska dokumentacija';
+    protected static ?string $navigationLabel = 'Medical documentation';
 
-    protected static ?string $label = 'nalaz';
+    protected static ?string $label = 'document';
 
-    protected static ?string $pluralLabel = 'nalazi';
+    protected static ?string $pluralLabel = 'documents';
 
     protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 

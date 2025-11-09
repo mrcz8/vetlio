@@ -35,11 +35,11 @@ class ClientResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'first_name';
 
-    protected static ?string $navigationLabel = 'Klijenti';
+    protected static ?string $navigationLabel = 'Clients';
 
-    protected static ?string $label = 'klijent';
+    protected static ?string $label = 'client';
 
-    protected static ?string $pluralLabel = 'klijenti';
+    protected static ?string $pluralLabel = 'clients';
 
     protected static bool $isScopedToTenant = false;
 
@@ -77,8 +77,8 @@ class ClientResource extends Resource
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'Naziv' => $record->full_name,
-            'Telefon' => $record->phone ?? '-',
+            'Name' => $record->full_name,
+            'Phone' => $record->phone ?? '-',
             'Email' => $record->email ?? '-',
         ];
     }
@@ -128,7 +128,17 @@ class ClientResource extends Resource
     {
         return parent::getEloquentQuery()
             ->withSum('itemsToPay', 'total')
-            ->withCount(['itemsToPay', 'reservations', 'patients', 'invoices', 'payments', 'tasks', 'notes', 'reminders', 'documents']);
+            ->withCount([
+                'itemsToPay',
+                'reservations',
+                'patients',
+                'invoices',
+                'payments',
+                'tasks',
+                'notes',
+                'reminders',
+                'documents',
+            ]);
     }
 
     public static function getRecordRouteBindingEloquentQuery(): Builder

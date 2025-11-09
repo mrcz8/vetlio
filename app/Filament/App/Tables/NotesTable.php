@@ -37,14 +37,14 @@ class NotesTable
                     ->html()
                     ->searchable()
                     ->limit(10)
-                    ->label('Napomena'),
+                    ->label('Note'),
 
                 TextColumn::make('user.full_name')
-                    ->label('Upisao'),
+                    ->label('Created by'),
 
                 TextColumn::make('created_at')
                     ->dateTime()
-                    ->label('Datum kreiranja')
+                    ->label('Created at'),
             ])
             ->filters([
                 //
@@ -54,7 +54,7 @@ class NotesTable
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make()
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

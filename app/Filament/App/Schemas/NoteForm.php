@@ -15,11 +15,11 @@ class NoteForm
             ->columns(1)
             ->components([
                 TextInput::make('title')
-                    ->label('Naslov')
+                    ->label('Title')
                     ->required(),
 
                 RichEditor::make('note')
-                    ->label('Napomena')
+                    ->label('Note')
                     ->required()
                     ->extraAttributes([
                         'style' => 'min-height: 200px',
@@ -27,7 +27,7 @@ class NoteForm
 
                 SpatieMediaLibraryFileUpload::make('attachments')
                     ->multiple()
-                    ->label('Privitci')
+                    ->label('Attachments')
             ]);
     }
 }

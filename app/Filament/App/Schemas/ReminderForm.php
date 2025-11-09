@@ -20,7 +20,7 @@ class ReminderForm
             ->components([
                 TextInput::make('title')
                     ->required()
-                    ->label('Naziv')
+                    ->label('Title')
                     ->maxLength(255),
 
                 DateTimePicker::make('remind_at')
@@ -29,19 +29,19 @@ class ReminderForm
                     ->native(false)
                     ->seconds(false)
                     ->after(now())
-                    ->label('Datum i vrijeme podsjetnika'),
+                    ->label('Reminder date and time'),
 
                 Select::make('user_to_remind_id')
                     ->options(User::get()->pluck('fullName', 'id'))
-                    ->label('Za djelatnika')
+                    ->label('For employee')
                     ->required(),
 
                 Textarea::make('description')
                     ->required()
-                    ->label('Opis'),
+                    ->label('Description'),
 
                 Toggle::make('send_email')
-                    ->label('Pošalji email'),
+                    ->label('Send email'),
             ]);
     }
 }

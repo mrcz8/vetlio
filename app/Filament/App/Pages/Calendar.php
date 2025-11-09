@@ -15,7 +15,7 @@ class Calendar extends Page
 
     protected static string | BackedEnum | null $navigationIcon = Heroicon::Calendar;
 
-    protected static ?string $title = 'Kalendar';
+    protected static ?string $title = 'Calendar';
 
     protected function getHeaderWidgets(): array
     {

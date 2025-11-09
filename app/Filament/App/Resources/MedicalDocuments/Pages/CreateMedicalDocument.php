@@ -24,7 +24,7 @@ class CreateMedicalDocument extends CreateRecord
 
     protected static bool $canCreateAnother = false;
 
-    protected static ?string $title = 'Novi nalaz';
+    protected static ?string $title = 'New Medical Report';
 
     #[Locked]
     public ?Reservation $reservation = null;
@@ -39,10 +39,10 @@ class CreateMedicalDocument extends CreateRecord
     {
         return [
             $this->getCreateFormAction()
-                ->label('Spremi'),
+                ->label('Save'),
             Action::make('save-and-lock')
-                ->label('Spremi i zaključaj')
-                ->successNotificationTitle('Nalaz je uspješno spremljen i zaključan')
+                ->label('Save & Lock')
+                ->successNotificationTitle('The report has been successfully saved and locked.')
                 ->action(function (Action $action) {
                     $this->create();
 
@@ -85,7 +85,7 @@ class CreateMedicalDocument extends CreateRecord
         if (empty($this->form->getStateOnly(['items']))) {
             Notification::make()
                 ->danger()
-                ->title('Niste unijeli stavke')
+                ->title('No items were added.')
                 ->send();
             $this->halt();
         }
@@ -94,9 +94,7 @@ class CreateMedicalDocument extends CreateRecord
     protected function handleRecordCreation(array $data): Model
     {
         $record = parent::handleRecordCreation($data);
-
         $record->items()->createMany($data['items']);
-
         return $record;
     }
 
@@ -118,7 +116,8 @@ class CreateMedicalDocument extends CreateRecord
             $this->client = $this->reservation->client;
 
             $this->form->getComponent('service_provider_id')?->disabled();
-            //Find reservation service and add as item.
+
+            // Pre-fill document with reservation service item
             $service = $this->reservation->service;
             $price = $service->currentPrice;
 
@@ -143,68 +142,59 @@ class CreateMedicalDocument extends CreateRecord
     protected function getHeaderActions(): array
     {
         return [
-            /*Action::make('save')
-                ->action('create')
-                ->label('Spremi'),*/
             Action::make('select-client-patient')
                 ->icon(Heroicon::UserCircle)
-                ->label('Odaberi klijenta i pacijenta')
-                ->hidden(function () {
-                    return $this->client && $this->patient;
-                })
+                ->label('Select Client & Patient')
+                ->hidden(fn() => $this->client && $this->patient)
                 ->schema([
                     Select::make('client_id')
+                        ->label('Client')
                         ->options(Client::all()->pluck('first_name', 'id')),
-
                     Select::make('patient_id')
+                        ->label('Patient')
                         ->options(Patient::all()->pluck('name', 'id')),
-                ])->action(function (array $data) {
+                ])
+                ->action(function (array $data) {
                     $this->client = Client::find($data['client_id']);
                     $this->patient = Patient::find($data['patient_id']);
 
-                    // Popuni formu
                     $this->form->fill([
                         'client_id' => $this->client->id,
                         'patient_id' => $this->patient->id,
                     ]);
                 }),
+
             Action::make('history')
                 ->icon(Heroicon::DocumentMagnifyingGlass)
                 ->slideOver()
-                ->visible(function () {
-                    return $this->patient;
-                })
+                ->visible(fn() => $this->patient)
                 ->modalSubmitAction(false)
-                ->label('Prošli nalazi')
+                ->label('Previous Reports')
                 ->record($this->patient)
                 ->schema([
                     RepeatableEntry::make('medicalDocuments')
-                        ->label(function ($state) {
-                            return 'Prošli nalazi (' . count($state) . ')';
-                        })
+                        ->label(fn($state) => 'Previous Reports (' . count($state) . ')')
                         ->columns(2)
                         ->schema([
                             TextEntry::make('created_at')
-                                ->label('Datum kreiranja')
+                                ->label('Created at')
                                 ->dateTime(),
                             TextEntry::make('serviceProvider.full_name')
-                                ->label('Liječnik'),
+                                ->label('Doctor'),
                             TextEntry::make('content')
-                                ->hintAction(Action::make('open-document')
-                                    ->icon(Heroicon::DocumentText)
-                                    ->label('Otvori')
-                                    ->openUrlInNewTab()
-                                    ->url(function ($record) {
-                                        return MedicalDocumentResource::getUrl('view', ['record' => $record]);
-                                    })
+                                ->hintAction(
+                                    Action::make('open-document')
+                                        ->icon(Heroicon::DocumentText)
+                                        ->label('Open')
+                                        ->openUrlInNewTab()
+                                        ->url(fn($record) => MedicalDocumentResource::getUrl('view', ['record' => $record]))
                                 )
                                 ->columnSpanFull()
                                 ->html()
-                                ->label('Nalaz')
-                        ])
+                                ->label('Report content')
+                        ]),
                 ])
-                ->label('Prijašnji nalazi')
-                ->outlined()
+                ->outlined(),
         ];
     }
 }

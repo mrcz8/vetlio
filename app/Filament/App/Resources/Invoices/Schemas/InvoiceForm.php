@@ -42,38 +42,24 @@ class InvoiceForm
                     ->columns(4)
                     ->columnSpanFull()
                     ->schema([
-
-
                         Select::make('client_id')
                             ->live(true)
-                            ->afterStateHydrated(function ($get, $set) {
-                                if ($get('client_id')) {
-                                    //$set('billing_address', Client::find($get('client_id'))->full_address);
-                                }
-                            })
-                            ->afterStateUpdated(function ($get, $set) {
-                                if ($get('client_id')) {
-                                    //$set('billing_address', Client::find($get('client_id'))->full_address);
-                                }
-                            })
                             ->relationship('client', 'first_name')
                             ->required()
-                            ->label('Klijent'),
+                            ->label('Client'),
 
                         DatePicker::make('invoice_date')
                             ->required()
-                            ->label('Datum računa')
+                            ->label('Invoice date')
                             ->default(now()),
 
                         DatePicker::make('invoice_due_date')
-                            ->required(function (Get $get) {
-                                return $get('payment_method_id') == PaymentMethod::BANK;
-                            })
-                            ->label('Datum dospijeća')
+                            ->required(fn(Get $get) => $get('payment_method_id') == PaymentMethod::BANK)
+                            ->label('Due date')
                             ->default(now()->addDays(15)),
 
                         ToggleButtons::make('payment_method_id')
-                            ->label('Način plaćanja')
+                            ->label('Payment method')
                             ->required()
                             ->grouped()
                             ->afterStateUpdated(function (Get $get, Set $set) {
@@ -89,46 +75,33 @@ class InvoiceForm
                             ->default(PaymentMethod::CASH)
                             ->options(PaymentMethod::class),
 
-
                         Select::make('issuer_id')
                             ->relationship('issuer', 'first_name')
-                            ->label('Izdavatelj')
+                            ->label('Issuer')
                             ->required()
                             ->default(auth()->id())
                             ->prefixIcon(PhosphorIcons::User),
 
                         Select::make('card_id')
-                            ->label('Kartica')
+                            ->label('Card')
                             ->options([
                                 1 => 'Visa',
                                 2 => 'Mastercard',
                             ])
-                            ->required(function (Get $get) {
-                                return $get('payment_method_id') == PaymentMethod::CARD;
-                            })
-                            ->disabled(function (Get $get) {
-                                return $get('payment_method_id') != PaymentMethod::CARD;
-                            }),
+                            ->required(fn(Get $get) => $get('payment_method_id') == PaymentMethod::CARD)
+                            ->disabled(fn(Get $get) => $get('payment_method_id') != PaymentMethod::CARD),
 
                         Select::make('bank_account_id')
                             ->relationship('bankAccount', 'name')
-                            ->label('Banka')
-                            ->createOptionForm(function (Schema $schema) {
-                                return BankResource::form($schema);
-                            })
-                            ->createOptionUsing(function (array $data): int {
-                                return Bank::create($data)->getKey();
-                            })
-                            ->required(function (Get $get) {
-                                return $get('payment_method_id') == PaymentMethod::BANK;
-                            })
-                            ->disabled(function (Get $get) {
-                                return $get('payment_method_id') != PaymentMethod::BANK;
-                            })
+                            ->label('Bank')
+                            ->createOptionForm(fn(Schema $schema) => BankResource::form($schema))
+                            ->createOptionUsing(fn(array $data): int => Bank::create($data)->getKey())
+                            ->required(fn(Get $get) => $get('payment_method_id') == PaymentMethod::BANK)
+                            ->disabled(fn(Get $get) => $get('payment_method_id') != PaymentMethod::BANK)
                             ->prefixIcon(PhosphorIcons::Bank),
 
                         SpatieTagsInput::make('tags')
-                            ->label('Oznake'),
+                            ->label('Tags'),
 
                         ModalTableSelect::make('service_id')
                             ->hiddenLabel()
@@ -139,13 +112,13 @@ class InvoiceForm
                             ->relationship('services', 'name')
                             ->selectAction(
                                 fn(Action $action) => $action
-                                    ->label('Odaberi usluge')
+                                    ->label('Select services')
                                     ->modalIcon(Heroicon::DocumentText)
-                                    ->modalHeading('Odaberi usluge')
-                                    ->modalSubmitActionLabel('Potvrdi'),
+                                    ->modalHeading('Select services')
+                                    ->modalSubmitActionLabel('Confirm'),
                             )
                             ->multiple()
-                            ->afterStateUpdated(function ($state, $get, $set, $record, $rawState, $livewire, $model, ModalTableSelect $component) {
+                            ->afterStateUpdated(function ($state, $get, $set) {
                                 $services = Service::whereIn('id', $state)->get();
 
                                 if (!$services) return;
@@ -155,7 +128,7 @@ class InvoiceForm
                                         'priceable_id' => $service->id,
                                         'priceable_type' => Service::class,
                                         'name' => $service->name,
-                                        'description' => 'Usluga',
+                                        'description' => 'Service',
                                         'quantity' => 1,
                                         'price' => Number::format($service->currentPrice->price, 2),
                                         'vat' => 25,
@@ -173,18 +146,14 @@ class InvoiceForm
                             ->tableConfiguration(ItemsToSelectTable::class),
 
                         self::getItemsComponent()
-                            ->visible(function (Get $get) {
-                                return $get('invoiceItems');
-                            }),
+                            ->visible(fn(Get $get) => $get('invoiceItems')),
 
                         SimpleAlert::make('no-items')
-                            ->visible(function (Get $get) {
-                                return !$get('invoiceItems');
-                            })
+                            ->visible(fn(Get $get) => !$get('invoiceItems'))
                             ->columnSpanFull()
-                            ->title('Nema dodanih stavki')
+                            ->title('No items added')
                             ->warning()
-                            ->description('Trenutno nema dodanih stavki, dodajte stavke'),
+                            ->description('There are currently no items, please add some.'),
 
                         Grid::make(5)
                             ->columnStart(3)
@@ -195,52 +164,43 @@ class InvoiceForm
                                     ->columnStart(3)
                                     ->schema([
                                         TextEntry::make('total')
-                                            ->label('Ukupno')
+                                            ->label('Total')
                                             ->inlineLabel()
                                             ->money('EUR')
                                             ->alignEnd()
-                                            ->getStateUsing(function (Get $get, Set $set) {
-                                                return self::calculateTotal($get, $set)['total'];
-                                            }),
+                                            ->getStateUsing(fn(Get $get, Set $set) => self::calculateTotal($get, $set)['total']),
 
                                         TextEntry::make('discount')
-                                            ->label('Ukupan popust')
+                                            ->label('Total discount')
                                             ->inlineLabel()
                                             ->money('EUR')
                                             ->alignEnd()
-                                            ->getStateUsing(function (Get $get, Set $set) {
-                                                return self::calculateTotal($get, $set)['discount'];
-                                            }),
+                                            ->getStateUsing(fn(Get $get, Set $set) => self::calculateTotal($get, $set)['discount']),
 
                                         TextEntry::make('vat')
-                                            ->label('Ukupan PDV')
+                                            ->label('Total VAT')
                                             ->inlineLabel()
                                             ->money('EUR')
                                             ->alignEnd()
-                                            ->getStateUsing(function (Get $get, Set $set) {
-                                                return self::calculateTotal($get, $set)['vat'];
-                                            }),
+                                            ->getStateUsing(fn(Get $get, Set $set) => self::calculateTotal($get, $set)['vat']),
 
                                         TextEntry::make('total_to_pay')
-                                            ->label('Ukupno za naplatu')
+                                            ->label('Amount due')
                                             ->inlineLabel()
                                             ->size(TextSize::Large)
                                             ->money('EUR')
                                             ->weight(FontWeight::Bold)
                                             ->alignEnd()
-                                            ->getStateUsing(function (Get $get, Set $set) {
-                                                return self::calculateTotal($get, $set)['total_to_pay'];;
-                                            }),
-                                    ])
+                                            ->getStateUsing(fn(Get $get, Set $set) => self::calculateTotal($get, $set)['total_to_pay']),
+                                    ]),
                             ]),
                         Textarea::make('client_note')
-                            ->label('Napomena za klijenta')
+                            ->label('Note for client')
                             ->columnSpanFull(),
                         Textarea::make('terms_and_conditions')
-                            ->label('Uvjeti i odredbe')
+                            ->label('Terms and conditions')
                             ->columnSpanFull(),
-                    ])
-
+                    ]),
             ]);
     }
 
@@ -248,9 +208,7 @@ class InvoiceForm
     {
         $items = $get('invoiceItems') ?? [];
 
-        $total = 0;
-        $discount = 0;
-        $vat = 0;
+        $total = $discount = $vat = 0;
 
         foreach ($items as $item) {
             $price = $item['price'] ?? 0;
@@ -265,15 +223,13 @@ class InvoiceForm
             $vat += ($itemVat * $quantity);
         }
 
-        $totalToPay = $total;
-
         $set('total', Number::format($total, 2));
 
         return [
             'total' => $total,
             'discount' => $discount,
             'vat' => $vat,
-            'total_to_pay' => $totalToPay,
+            'total_to_pay' => $total,
         ];
     }
 
@@ -290,7 +246,6 @@ class InvoiceForm
             $itemDiscount = Arr::get($invoiceItem, 'discount', 0);
             $quantity = Arr::get($invoiceItem, 'quantity', 1);
 
-            // izračunaj total za stavku
             $itemTotal = (($price + $itemVat) - $itemDiscount) * $quantity;
 
             $invoiceItem['priceable_id'] = $priceableId;
@@ -314,36 +269,34 @@ class InvoiceForm
             ->itemNumbers()
             ->cloneable()
             ->columnSpanFull()
-            ->label('Stavke računa')
-            ->addActionLabel('Dodaj stavku')
+            ->label('Invoice items')
+            ->addActionLabel('Add item')
             ->compact()
             ->addable(false)
             ->defaultItems(0)
             ->minItems(1)
             ->table([
-                TableColumn::make('Stavka')
+                TableColumn::make('Item')
                     ->width('350px')
                     ->markAsRequired(),
-                TableColumn::make('Količina')
+                TableColumn::make('Quantity')
                     ->markAsRequired()
                     ->alignEnd(),
-                TableColumn::make('Cijena')
+                TableColumn::make('Price')
                     ->markAsRequired()
                     ->alignEnd(),
-                TableColumn::make('PDV')
+                TableColumn::make('VAT')
                     ->alignEnd(),
-                TableColumn::make('Popust')
+                TableColumn::make('Discount')
                     ->alignEnd(),
-                TableColumn::make('Ukupno')
+                TableColumn::make('Total')
                     ->alignEnd(),
             ])
             ->schema([
                 TextInput::make('name'),
                 TextInput::make('quantity')
                     ->required()
-                    ->extraInputAttributes([
-                        'class' => 'text-right',
-                    ])
+                    ->extraInputAttributes(['class' => 'text-right'])
                     ->afterStateUpdated(function (Get $get, Set $set) {
                         if ($get('quantity') == null) {
                             $set('quantity', 1);
@@ -356,39 +309,28 @@ class InvoiceForm
 
                 TextInput::make('price')
                     ->required()
-                    ->extraInputAttributes([
-                        'class' => 'text-right',
-                    ])
-                    ->formatStateUsing(function ($state) {
-                        return Number::format($state ?? 0, 2);
-                    })
+                    ->extraInputAttributes(['class' => 'text-right'])
+                    ->formatStateUsing(fn($state) => Number::format($state ?? 0, 2))
                     ->default(0)
                     ->live(false, 500),
 
                 TextInput::make('vat')
-                    ->extraInputAttributes([
-                        'class' => 'text-right',
-                    ])
+                    ->extraInputAttributes(['class' => 'text-right'])
                     ->default(0)
                     ->live(false, 500),
 
                 TextInput::make('discount')
-                    ->extraInputAttributes([
-                        'class' => 'text-right',
-                    ])
+                    ->extraInputAttributes(['class' => 'text-right'])
                     ->default(0)
                     ->live(false, 500),
 
                 TextInput::make('total')
-                    ->extraInputAttributes([
-                        'class' => 'text-right font-bold',
-                    ])->default(0),
+                    ->extraInputAttributes(['class' => 'text-right font-bold'])
+                    ->default(0),
 
                 TextInput::make('priceable_type'),
                 TextInput::make('priceable_id'),
             ])
-            ->afterStateUpdated(function (Get $get, Set $set) {
-                self::makeCalculations($get, $set);
-            });
+            ->afterStateUpdated(fn(Get $get, Set $set) => self::makeCalculations($get, $set));
     }
 }

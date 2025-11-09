@@ -16,23 +16,24 @@ class DocumentForm
             ->columns(1)
             ->components([
                 TextInput::make('title')
-                    ->placeholder('Naziv datoteke')
-                    ->label('Naziv')
+                    ->placeholder('File name')
+                    ->label('Title')
                     ->required()
                     ->maxLength(255),
+
                 Textarea::make('description')
-                    ->placeholder('Opis datoteka')
-                    ->label('Opis')
+                    ->placeholder('File description')
+                    ->label('Description')
                     ->maxLength(255),
 
                 Toggle::make('visible_in_portal')
-                    ->label('Prikaz u portalu'),
+                    ->label('Visible in portal'),
 
                 SpatieMediaLibraryFileUpload::make('media')
-                    ->label('Datoteke')
+                    ->label('Files')
                     ->downloadable()
                     ->collection('documents')
-                    ->multiple()
+                    ->multiple(),
             ]);
     }
 }

@@ -22,9 +22,9 @@ class MedicalDocumentUploadDocuments extends ManageRelatedRecords
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::PaperClip;
 
-    protected static ?string $navigationLabel = 'Dokumenti';
+    protected static ?string $navigationLabel = 'Documents';
 
-    protected static ?string $title = 'Dokumenti';
+    protected static ?string $title = 'Documents';
 
     public function getSubheading(): string|Htmlable|null
     {

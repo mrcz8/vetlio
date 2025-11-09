@@ -28,15 +28,15 @@ class Organisation extends Page implements HasSchemas
 
     protected static ?string $cluster = SettingsCluster::class;
 
-    protected static string|null|\UnitEnum $navigationGroup = 'Tvrtka';
+    protected static string|null|\UnitEnum $navigationGroup = 'Company';
 
     public ?array $data = [];
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $title = 'Informacije o tvrtki';
+    protected static ?string $title = 'Company information';
 
-    protected static ?string $navigationLabel = 'Informacije ';
+    protected static ?string $navigationLabel = 'Information';
 
     protected static string|null|\BackedEnum $navigationIcon = Heroicon::BuildingOffice;
 
@@ -71,55 +71,54 @@ class Organisation extends Page implements HasSchemas
                             ->getUploadedFileNameForStorageUsing(function (TemporaryUploadedFile $file): string {
                                 return auth()->user()->organisation->subdomain . '.' . $file->getClientOriginalExtension();
                             })
-                            ->label('Logo tvrtke'),
+                            ->label('Company logo'),
 
                         TextInput::make('name')
-                            ->label('Naziv tvrtke')
+                            ->label('Company name')
                             ->required(),
 
                         TextInput::make('oib')
-                            ->label('OIB')
+                            ->label('Tax ID (OIB)')
                             ->required()
                             ->minLength(11)
                             ->maxLength(11),
 
                         Toggle::make('in_vat_system')
-                            ->label('U sustavu PDV-a')
+                            ->label('In VAT system')
                             ->inline(true)
                             ->default(false),
 
                         TextInput::make('address')
-                            ->label('Adresa')
+                            ->label('Address')
                             ->required(),
 
                         TextInput::make('city')
-                            ->label('Grad')
+                            ->label('City')
                             ->required(),
 
                         TextInput::make('zip_code')
-                            ->label('Poštanski broj')
+                            ->label('Postal code')
                             ->required(),
 
                         TextInput::make('phone')
                             ->tel()
-                            ->label('Telefon')
+                            ->label('Phone')
                             ->prefixIcon(Heroicon::Phone),
 
                         Select::make('country_id')
                             ->required()
                             ->relationship('country', 'name_native')
-                            ->label('Država'),
+                            ->label('Country'),
 
                         Select::make('language_id')
                             ->required()
                             ->relationship('language', 'name_native')
-                            ->label('Jezik'),
-
-
+                            ->label('Language'),
                     ]),
+
                 Action::make('save')
                     ->action('save')
-                    ->label('Spremi')
+                    ->label('Save'),
             ]);
     }
 
@@ -132,9 +131,8 @@ class Organisation extends Page implements HasSchemas
 
             Notification::make()
                 ->success()
-                ->title("Spremljeno.")
+                ->title('Saved.')
                 ->send();
-
         } catch (Halt $exception) {
             return;
         }

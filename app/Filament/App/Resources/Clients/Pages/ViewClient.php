@@ -14,9 +14,9 @@ class ViewClient extends ViewRecord
 {
     protected static string $resource = ClientResource::class;
 
-    protected static ?string $title = 'Pregled';
+    protected static ?string $title = 'View client';
 
-    protected static ?string $navigationLabel = 'Pregled';
+    protected static ?string $navigationLabel = 'View client';
 
     public function getSubheading(): string|Htmlable|null
     {
@@ -33,13 +33,7 @@ class ViewClient extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            SendEmailAction::make()
-                ->receivers(['luka.caivc@gmail.com'])
-                ->bccReceivers(['marko@marko.com'])
-                ->ccReceivers(['ante@ante.com'])
-                ->subject('Moj naslov')
-                ->attachment('mojprivitak.pdf'),
-
+            SendEmailAction::make(),
             EditAction::make(),
         ];
     }

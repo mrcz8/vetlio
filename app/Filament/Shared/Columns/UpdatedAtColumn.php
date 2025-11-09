@@ -11,7 +11,7 @@ class UpdatedAtColumn extends TextColumn
         parent::setUp();
 
         $this->name('updated_at');
-        $this->label('Datum izmjene');
+        $this->label(__('tables.columns.updated_at'));
         $this->dateTime();
         $this->sortable();
         $this->toggleable(isToggledHiddenByDefault: true);

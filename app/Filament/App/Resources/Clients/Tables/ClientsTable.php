@@ -30,7 +30,7 @@ class ClientsTable
                                 ->orWhere('last_name', 'like', "%{$search}%");
                         });
                     })
-                    ->label('Ime i prezime'),
+                    ->label('Full name'),
 
                 TextColumn::make('email')
                     ->searchable()
@@ -44,41 +44,41 @@ class ClientsTable
                     ->sortable()
                     ->icon(Heroicon::Phone)
                     ->copyable()
-                    ->label('Telefon'),
+                    ->label('Phone'),
 
                 TextColumn::make('full_address')
                     ->sortable()
-                    ->label('Adresa'),
+                    ->label('Address'),
 
                 TextColumn::make('country.name')
                     ->icon(Heroicon::Flag)
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->label('Država'),
+                    ->label('Country'),
 
                 SpatieTagsColumn::make('tags')
-                    ->label('Oznake'),
+                    ->label('Tags'),
 
                 TextColumn::make('items_to_pay_sum_total')
-                    ->label('Ukupno dugovanje')
+                    ->label('Total due')
                     ->default(0)
                     ->alignEnd()
-                    ->weight(function($state) {
+                    ->weight(function ($state) {
                         return $state > 0 ? FontWeight::SemiBold : null;
                     })
-                    ->color(function($state) {
+                    ->color(function ($state) {
                         return $state > 0 ? 'danger' : null;
                     })
                     ->money('EUR', 100)
                     ->sum('itemsToPay', 'total'),
 
                 TextColumn::make('invoices_sum_total')
-                    ->label('Ukupno naplaćeno')
+                    ->label('Total paid')
                     ->color('success')
                     ->default(0)
                     ->alignRight()
                     ->weight(FontWeight::SemiBold)
                     ->money('EUR', 100)
-                    ->sum('invoices', 'total')
+                    ->sum('invoices', 'total'),
             ])
             ->recordActions([
                 ViewAction::make(),

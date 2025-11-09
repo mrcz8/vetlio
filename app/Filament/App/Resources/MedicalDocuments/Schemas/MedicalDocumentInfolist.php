@@ -26,26 +26,27 @@ class MedicalDocumentInfolist
             ->components([
                 SimpleAlert::make('locked')
                     ->danger()
-                    ->visible(function ($record) {
-                        return $record->locked_at;
-                    })
+                    ->visible(fn($record) => $record->locked_at)
                     ->border()
                     ->columnSpanFull()
-                    ->action(Action::make('unlock')
-                        ->action(function ($record) {
-                            return $record->update([
+                    ->action(
+                        Action::make('unlock')
+                            ->action(fn($record) => $record->update([
                                 'locked_at' => null,
                                 'locked_user_id' => null,
-                            ]);
-                        })
-                        ->color('danger')
-                        ->icon(Heroicon::LockOpen)
-                        ->link()
-                        ->icon(Heroicon::LockClosed)
-                        ->requiresConfirmation()
-                        ->label('Otključaj'))
+                            ]))
+                            ->color('danger')
+                            ->icon(Heroicon::LockClosed)
+                            ->link()
+                            ->requiresConfirmation()
+                            ->label('Unlock')
+                    )
                     ->description(function ($record) {
-                        return new HtmlString("Dokument je zaključan <b>{$record->locked_at->format('d.m.Y H:i')} (Prije {$record->locked_at->diffForHumans()})</b> od djelatnika: <b>{$record->userLocked->full_name}</b>");
+                        return new HtmlString(
+                            "This document was locked on <b>{$record->locked_at->format('d.m.Y H:i')} "
+                            . "( {$record->locked_at->diffForHumans()})</b> by employee: "
+                            . "<b>{$record->userLocked->full_name}</b>"
+                        );
                     }),
 
                 Section::make()
@@ -55,35 +56,24 @@ class MedicalDocumentInfolist
                     ]),
 
                 RepeatableEntry::make('items')
-                    ->visible(function ($livewire) {
-                        return $livewire->showItemsToPay;
-                    })
+                    ->visible(fn($livewire) => $livewire->showItemsToPay)
                     ->columnSpanFull()
-                    ->label(function ($record) {
-                        return 'Stavke (' . count($record->items ?? []) . ')';
-                    })
+                    ->label(fn($record) => 'Items (' . count($record->items ?? []) . ')')
                     ->table([
-                        TableColumn::make('Stavka')->width('300px')->markAsRequired(),
-                        TableColumn::make('Količina')->markAsRequired()->alignEnd(),
-                        TableColumn::make('Cijena')->markAsRequired()->alignEnd(),
-                        TableColumn::make('PDV')->alignEnd(),
-                        TableColumn::make('Popust')->alignEnd(),
-                        TableColumn::make('Ukupno')->alignEnd(),
-                        TableColumn::make('Naplaćeno')->alignEnd()->width('100px'),
+                        TableColumn::make('Item')->width('300px')->markAsRequired(),
+                        TableColumn::make('Quantity')->markAsRequired()->alignEnd(),
+                        TableColumn::make('Price')->markAsRequired()->alignEnd(),
+                        TableColumn::make('VAT')->alignEnd(),
+                        TableColumn::make('Discount')->alignEnd(),
+                        TableColumn::make('Total')->alignEnd(),
+                        TableColumn::make('Paid')->alignEnd()->width('100px'),
                     ])
                     ->schema([
                         TextEntry::make('priceable.name'),
-                        TextEntry::make('quantity')
-                            ->alignEnd(),
-                        TextEntry::make('price')
-                            ->money('EUR')
-                            ->alignEnd(),
-                        TextEntry::make('tax')
-                            ->money('EUR')
-                            ->alignEnd(),
-                        TextEntry::make('discount')
-                            ->money('EUR')
-                            ->alignEnd(),
+                        TextEntry::make('quantity')->alignEnd(),
+                        TextEntry::make('price')->money('EUR')->alignEnd(),
+                        TextEntry::make('tax')->money('EUR')->alignEnd(),
+                        TextEntry::make('discount')->money('EUR')->alignEnd(),
                         TextEntry::make('total')
                             ->alignEnd()
                             ->weight(FontWeight::Bold)
@@ -93,34 +83,28 @@ class MedicalDocumentInfolist
                                 return ViewInvoiceAction::make()
                                     ->record($record->invoice)
                                     ->hiddenLabel()
-                                    ->visible(function() use ($record) {
-                                        return $record->invoice;
-                                    })
-                                    ->tooltip(function () use ($record) {
-                                        return $record->invoice->code;
-                                    })
+                                    ->visible(fn() => $record->invoice)
+                                    ->tooltip(fn() => $record->invoice->code)
                                     ->extraAttributes(['class' => 'mt-1']);
                             })
                             ->alignEnd()
-                            ->boolean()
+                            ->boolean(),
                     ]),
 
                 Grid::make(4)
-                    ->visible(function ($livewire) {
-                        return $livewire->showItemsToPay;
-                    })
+                    ->visible(fn($livewire) => $livewire->showItemsToPay)
                     ->columnSpanFull()
                     ->schema([
                         TextEntry::make('items_sum_total')
                             ->columnStart(4)
-                            ->label('Sveukupno:')
+                            ->label('Total amount:')
                             ->alignRight()
                             ->inlineLabel()
                             ->size(TextSize::Large)
                             ->weight(FontWeight::Bold)
                             ->sum('items', 'total')
-                            ->money('EUR', 100)
-                    ])
+                            ->money('EUR', 100),
+                    ]),
             ]);
     }
 }

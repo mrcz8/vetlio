@@ -23,9 +23,9 @@ class ClientNotes extends ManageRelatedRecords
 
     protected static string|BackedEnum|null $navigationIcon = PhosphorIcons::Note;
 
-    protected static ?string $navigationLabel = 'Napomene';
+    protected static ?string $navigationLabel = 'Notes';
 
-    protected static ?string $title = 'Napomene';
+    protected static ?string $title = 'Notes';
 
     public static function getNavigationBadge(): ?string
     {

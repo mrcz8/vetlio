@@ -24,13 +24,13 @@ class InvoicePayments extends ManageRelatedRecords
 
     protected static string|BackedEnum|null $navigationIcon = PhosphorIcons::CurrencyEur;
 
-    protected static ?string $title = 'Uplate za račun';
+    protected static ?string $title = 'Payments for invoice';
 
-    protected static ?string $navigationLabel = 'Uplate';
+    protected static ?string $navigationLabel = 'Payments';
 
     public function getSubheading(): string|Htmlable|null
     {
-        return 'Račun: ' . $this->getRecord()->code;
+        return 'Invoice: ' . $this->getRecord()->code;
     }
 
     public static function getNavigationBadgeColor(): string|array|null

@@ -18,22 +18,23 @@ class ItemsRepeater extends Repeater
         $this->itemNumbers();
         $this->cloneable();
         $this->columnSpanFull();
-        $this->label('Stavke');
-        $this->addActionLabel('Dodaj stavku');
+        $this->label('Items');
+        $this->addActionLabel('Add item');
         $this->compact();
         $this->addable(false);
         $this->defaultItems(0);
         $this->minItems(1);
         $this->table([
-            TableColumn::make('Stavka')->width('350px')->markAsRequired(),
-            TableColumn::make('Količina')->markAsRequired()->alignEnd(),
-            TableColumn::make('Cijena')->markAsRequired()->alignEnd(),
-            TableColumn::make('PDV')->alignEnd(),
-            TableColumn::make('Popust')->alignEnd(),
-            TableColumn::make('Ukupno')->alignEnd(),
+            TableColumn::make('Item')->width('350px')->markAsRequired(),
+            TableColumn::make('Quantity')->markAsRequired()->alignEnd(),
+            TableColumn::make('Price')->markAsRequired()->alignEnd(),
+            TableColumn::make('VAT')->alignEnd(),
+            TableColumn::make('Discount')->alignEnd(),
+            TableColumn::make('Total')->alignEnd(),
         ])
             ->schema([
                 TextInput::make('name'),
+
                 TextInput::make('quantity')
                     ->required()
                     ->minValue(1)
@@ -46,22 +47,26 @@ class ItemsRepeater extends Repeater
                             $set('quantity', 1);
                         }
                     }),
+
                 TextInput::make('price')
                     ->required()
                     ->default(0)
                     ->live(false, 500)
                     ->formatStateUsing(fn($state) => Number::format($state ?? 0, 2))
                     ->extraInputAttributes(['class' => 'text-right']),
+
                 TextInput::make('vat')
                     ->default(0)
                     ->live(false, 500)
                     ->formatStateUsing(fn($state) => Number::format($state ?? 0, 2))
                     ->extraInputAttributes(['class' => 'text-right']),
+
                 TextInput::make('discount')
                     ->default(0)
                     ->live(false, 500)
                     ->formatStateUsing(fn($state) => Number::format($state ?? 0, 2))
                     ->extraInputAttributes(['class' => 'text-right']),
+
                 TextInput::make('total')
                     ->default(0)
                     ->formatStateUsing(fn($state) => Number::format($state ?? 0, 2))
@@ -70,16 +75,15 @@ class ItemsRepeater extends Repeater
                 TextInput::make('priceable_type'),
                 TextInput::make('priceable_id'),
             ]);
+
         $this->afterStateUpdated(function (Get $get, Set $set) {
             $this->calculateTotals($get, $set);
         });
     }
 
-
     public function calculateTotals(Get $get, Set $set): void
     {
         $items = $get($this->getName()) ?? [];
-//dd($items);
         $total = 0;
 
         foreach ($items as $item) {

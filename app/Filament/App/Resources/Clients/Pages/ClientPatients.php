@@ -22,9 +22,9 @@ class ClientPatients extends ManageRelatedRecords
 
     protected static string|BackedEnum|null $navigationIcon = PhosphorIcons::Dog;
 
-    protected static ?string $navigationLabel = 'Pacijenti';
+    protected static ?string $navigationLabel = 'Patients';
 
-    protected static ?string $title = 'Pacijenti';
+    protected static ?string $title = 'Patients';
 
     public function getSubheading(): string|Htmlable|null
     {

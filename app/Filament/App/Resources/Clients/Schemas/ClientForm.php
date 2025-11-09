@@ -24,45 +24,43 @@ class ClientForm
                     ->alignCenter()
                     ->avatar()
                     ->columnSpanFull()
-                    ->label('Slika profila'),
-
-
+                    ->label('Profile picture'),
 
                 Tabs::make()
                     ->columnSpanFull()
                     ->contained(false)
                     ->tabs([
-                        Tabs\Tab::make('Osnovne informacije')
+                        Tabs\Tab::make('Basic information')
                             ->columns(2)
                             ->icon(Heroicon::UserCircle)
                             ->schema([
                                 TextInput::make('first_name')
-                                    ->label('Ime')
+                                    ->label('First name')
                                     ->required(),
 
                                 TextInput::make('last_name')
                                     ->required()
-                                    ->label('Prezime'),
+                                    ->label('Last name'),
 
                                 ToggleButtons::make('gender_id')
-                                    ->label('Spol')
+                                    ->label('Gender')
                                     ->inline()
                                     ->default(3)
                                     ->icons([
                                         1 => PhosphorIcons::GenderMale,
                                         2 => PhosphorIcons::GenderFemale,
-                                        3 => PhosphorIcons::GenderIntersex
+                                        3 => PhosphorIcons::GenderIntersex,
                                     ])
                                     ->grouped()
                                     ->options([
-                                        1 => 'Muški',
-                                        2 => 'Ženski',
-                                        3 => 'Neodabrano'
+                                        1 => 'Male',
+                                        2 => 'Female',
+                                        3 => 'Unspecified',
                                     ]),
 
                                 DatePicker::make('date_of_birth')
                                     ->before(now())
-                                    ->label('Datum rođenja'),
+                                    ->label('Date of birth'),
 
                                 TextInput::make('oib')
                                     ->label('OIB')
@@ -70,13 +68,13 @@ class ClientForm
                                         return $rule->where('organisation_id', auth()->user()->organisation_id);
                                     })
                                     ->validationMessages([
-                                        'unique' => 'OIB se već koristi'
+                                        'unique' => 'OIB is already in use.',
                                     ])
                                     ->numeric()
                                     ->maxLength(11),
 
                                 Select::make('language_id')
-                                    ->label('Jezik')
+                                    ->label('Language')
                                     ->default(auth()->user()->organisation->language_id)
                                     ->required()
                                     ->options(Language::get()->pluck('name_native', 'id'))
@@ -84,36 +82,37 @@ class ClientForm
 
                                 Select::make('how_did_you_hear')
                                     ->prefixIcon(PhosphorIcons::FacebookLogo)
-                                    ->label('Kako ste čuli za nas?')
+                                    ->label('How did you hear about us?')
                                     ->options([
                                         'facebook' => 'Facebook',
                                         'instagram' => 'Instagram',
                                     ]),
 
                                 SpatieTagsInput::make('tags')
-                                    ->label('Opaske'),
+                                    ->label('Tags'),
                             ]),
-                        Tabs\Tab::make('Adresa')
+
+                        Tabs\Tab::make('Address')
                             ->columns(2)
                             ->icon(Heroicon::Map)
                             ->schema([
                                 TextInput::make('address')
-                                    ->label('Adresa'),
+                                    ->label('Address'),
 
                                 TextInput::make('city')
-                                    ->label('Grad'),
+                                    ->label('City'),
 
                                 TextInput::make('zip_code')
-                                    ->label('Poštanski broj'),
+                                    ->label('Postal code'),
 
                                 Select::make('country_id')
                                     ->relationship('country', 'name_native')
                                     ->required()
                                     ->default(auth()->user()->organisation->country_id)
-                                    ->label('Država'),
+                                    ->label('Country'),
                             ]),
 
-                        Tabs\Tab::make('Kontakt')
+                        Tabs\Tab::make('Contact')
                             ->columns(2)
                             ->icon(Heroicon::Phone)
                             ->schema([
@@ -123,7 +122,7 @@ class ClientForm
                                         return $rule->where('organisation_id', auth()->user()->organisation_id);
                                     })
                                     ->validationMessages([
-                                        'unique' => 'Email adresa se već koristi'
+                                        'unique' => 'Email address is already in use.',
                                     ])
                                     ->prefixIcon('heroicon-o-at-symbol')
                                     ->label('Email'),
@@ -134,13 +133,11 @@ class ClientForm
                                         return $rule->where('organisation_id', auth()->user()->organisation_id);
                                     })
                                     ->validationMessages([
-                                        'unique' => 'Broj telefona se već koristi'
+                                        'unique' => 'Phone number is already in use.',
                                     ])
-                                    ->label('Telefon'),
-                            ])
+                                    ->label('Phone'),
+                            ]),
                     ]),
-
-
             ]);
     }
 }

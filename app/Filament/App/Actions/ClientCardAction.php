@@ -23,8 +23,8 @@ class ClientCardAction
             ->outlined()
             ->hiddenLabel()
             ->model(Client::class)
-            ->tooltip('Kartica klijenta')
-            ->label('Kartica klijenta')
+            ->tooltip('Client card')
+            ->label('Client card')
             ->icon(PhosphorIcons::UserCircle);
     }
 }

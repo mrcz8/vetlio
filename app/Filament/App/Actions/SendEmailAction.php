@@ -40,10 +40,10 @@ class SendEmailAction extends Action
 
         $this->icon(Heroicon::Envelope);
         $this->modalIcon(PhosphorIcons::Envelope);
-        $this->successNotificationTitle('Email je uspješno poslan');
-        $this->failureNotificationTitle('Greška pri slanju emaila');
+        $this->successNotificationTitle('Email sent successfully');
+        $this->failureNotificationTitle('Error sending email');
         $this->hiddenLabel();
-        $this->tooltip('Pošalji email');
+        $this->tooltip('Send email');
         $this->outlined();
 
         $this->schema(fn() => [
@@ -59,50 +59,50 @@ class SendEmailAction extends Action
                 ->hintActions([
                     Action::make('addCCReceiver')
                         ->icon(PhosphorIcons::Users)
-                        ->label('Dodaj CC')
+                        ->label('Add CC')
                         ->action(function (Get $get, Set $set) {
-                            $set('showCc', !(bool)$get('showCc'));
+                            $set('showCc', !(bool) $get('showCc'));
                         }),
                     Action::make('addBCCReceiver')
                         ->icon(PhosphorIcons::Users)
-                        ->label('Dodaj BCC')
+                        ->label('Add BCC')
                         ->action(function (Get $get, Set $set) {
-                            $set('showBcc', !(bool)$get('showBcc'));
+                            $set('showBcc', !(bool) $get('showBcc'));
                         }),
                 ])
-                ->label('Primatelji')
-                ->placeholder('Upišite e-mail adrese i potvrdite Enterom…')
+                ->label('Recipients')
+                ->placeholder('Enter email addresses and confirm with Enter…')
                 ->required()
                 ->separator(',')
                 ->default($this->evaluate($this->receivers))
-                ->helperText('Najmanje jedan primatelj je obavezan.'),
+                ->helperText('At least one recipient is required.'),
 
             TagsInput::make('ccReceivers')
                 ->label('CC')
                 ->separator(',')
-                ->visible(fn(Get $get) => (bool)$get('showCc'))
+                ->visible(fn(Get $get) => (bool) $get('showCc'))
                 ->default($this->evaluate($this->ccReceivers)),
 
             TagsInput::make('bccReceivers')
                 ->label('BCC')
                 ->separator(',')
-                ->visible(fn(Get $get) => (bool)$get('showBcc'))
+                ->visible(fn(Get $get) => (bool) $get('showBcc'))
                 ->default($this->evaluate($this->bccReceivers)),
 
             TextInput::make('subject')
-                ->label('Predmet')
+                ->label('Subject')
                 ->required()
                 ->maxLength(255)
                 ->default($this->evaluate($this->subject)),
 
             RichEditor::make('body')
-                ->label('Poruka')
+                ->label('Message')
                 ->extraInputAttributes(['style' => 'min-height: 200px'])
                 ->required()
                 ->default($this->evaluate($this->body)),
 
             SimpleAlert::make('existing_attachment')
-                ->title('Privitak za slanje')
+                ->title('Attachment to send')
                 ->description(fn() => $this->evaluate($this->attachmentName))
                 ->columnSpanFull()
                 ->info()
@@ -110,14 +110,14 @@ class SendEmailAction extends Action
                 ->visible(fn() => $this->attachment !== null),
 
             FileUpload::make('extra_attachments')
-                ->label('Dodatni privitci')
+                ->label('Additional attachments')
                 ->multiple()
-                ->disk('local')                 // sve radimo na 'local'
+                ->disk('local') // everything stored on 'local'
                 ->directory('emails/attachments')
                 ->visibility('private')
                 ->downloadable()
                 ->maxSize(10240)
-                ->hint('Dodajte PDF-ove ili slike kao dodatne priloge.'),
+                ->hint('Add PDFs or images as extra attachments.'),
         ]);
 
         $this->action(function (array $data) {
@@ -126,7 +126,7 @@ class SendEmailAction extends Action
             $bcc = $data['bccReceivers'] ?? [];
 
             if (empty($to) && empty($cc) && empty($bcc)) {
-                $this->failureNotificationTitle('Potrebno je unijeti barem jednog primatelja (To, CC ili BCC).');
+                $this->failureNotificationTitle('You must specify at least one recipient (To, CC or BCC).');
                 $this->failure();
                 return;
             }
@@ -189,8 +189,8 @@ class SendEmailAction extends Action
 
     public function attachment(string $relativePath, string|\Closure|null $displayName = null): static
     {
-        $this->attachment = $relativePath;       // npr. 'emails/attachments/invoice-123.pdf'
-        $this->attachmentName = $displayName;    // npr. 'invoice-123.pdf'
+        $this->attachment = $relativePath; // e.g. 'emails/attachments/invoice-123.pdf'
+        $this->attachmentName = $displayName; // e.g. 'invoice-123.pdf'
         return $this;
     }
 }

@@ -31,39 +31,39 @@ class MedicalDocumentForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
-            ->disabled(function (?MedicalDocument $record) {
-                return $record?->locked_at;
-            })
+            ->disabled(fn(?MedicalDocument $record) => $record?->locked_at)
             ->columns(1)
             ->components([
                 SimpleAlert::make('locked')
                     ->danger()
                     ->hiddenOn('create')
-                    ->visible(function (?MedicalDocument $record) {
-                        return $record?->locked_at;
-                    })
+                    ->visible(fn(?MedicalDocument $record) => $record?->locked_at)
                     ->border()
                     ->columnSpanFull()
-                    ->action(Action::make('unlock')
-                        ->action(function ($record) {
-                            return $record->update([
+                    ->action(
+                        Action::make('unlock')
+                            ->action(fn($record) => $record->update([
                                 'locked_at' => null,
                                 'locked_user_id' => null,
-                            ]);
-                        })
-                        ->color('danger')
-                        ->icon(Heroicon::LockOpen)
-                        ->link()
-                        ->icon(Heroicon::LockClosed)
-                        ->requiresConfirmation()
-                        ->label('Otključaj'))
+                            ]))
+                            ->color('danger')
+                            ->icon(Heroicon::LockClosed)
+                            ->link()
+                            ->requiresConfirmation()
+                            ->label('Unlock')
+                    )
                     ->description(function ($record) {
-                        return new HtmlString("Dokument je zaključan <b>{$record->locked_at->format('d.m.Y H:i')} (Prije {$record->locked_at->diffForHumans()})</b> od djelatnika: <b>{$record->userLocked->full_name}</b>");
+                        return new HtmlString(
+                            "The document was locked on <b>{$record->locked_at->format('d.m.Y H:i')} ("
+                            . " {$record->locked_at->diffForHumans()})</b> by user: "
+                            . "<b>{$record->userLocked->full_name}</b>"
+                        );
                     }),
+
                 Tabs::make('tabs')
                     ->contained(false)
                     ->tabs([
-                        Tabs\Tab::make('Osnovni podaci')
+                        Tabs\Tab::make('General information')
                             ->key('main-info')
                             ->columns(4)
                             ->icon(Heroicon::Document)
@@ -76,14 +76,14 @@ class MedicalDocumentForm
                                             ->autofocus()
                                             ->hintActions([
                                                 self::getLoadFromTemplateAction(),
-                                                self::saveAsTemplateAction()
+                                                self::saveAsTemplateAction(),
                                             ])
                                             ->hiddenLabel()
                                             ->extraAttributes([
                                                 'style' => 'min-height: 600px;',
                                             ])
-                                            ->label('Sadržaj')
-                                            ->required()
+                                            ->label('Content')
+                                            ->required(),
                                     ]),
 
                                 Section::make()
@@ -91,14 +91,12 @@ class MedicalDocumentForm
                                     ->columnSpan(1)
                                     ->schema([
                                         Select::make('service_provider_id')
-                                            ->label('Liječnik')
+                                            ->label('Doctor')
                                             ->required()
                                             ->options(User::get()->pluck('full_name', 'id')),
 
-                                        Fieldset::make('Pacijent')
-                                            ->visible(function ($livewire) {
-                                                return $livewire->patient;
-                                            })
+                                        Fieldset::make('Patient')
+                                            ->visible(fn($livewire) => $livewire->patient)
                                             ->schema([
                                                 Flex::make([
                                                     ImageEntry::make('patient.avatar_url')
@@ -110,57 +108,49 @@ class MedicalDocumentForm
                                                         ->gap(false)
                                                         ->schema([
                                                             TextEntry::make('patient.name')
-                                                                ->state(function ($livewire) {
-                                                                    return $livewire?->patient?->name;
-                                                                })
+                                                                ->state(fn($livewire) => $livewire?->patient?->name)
                                                                 ->live()
                                                                 ->hiddenLabel()
                                                                 ->size(TextSize::Large),
+
                                                             TextEntry::make('patient.breed.name')
-                                                                ->state(function ($livewire) {
-                                                                    return $livewire?->patient?->breed?->name;
-                                                                })
+                                                                ->state(fn($livewire) => $livewire?->patient?->breed?->name)
                                                                 ->icon(PhosphorIcons::Dog)
                                                                 ->size(TextSize::Small)
                                                                 ->hiddenLabel(),
-                                                            TextEntry::make('patient.breed.name')
-                                                                ->state(function ($livewire) {
-                                                                    return $livewire?->patient?->breed?->name;
-                                                                })
+
+                                                            TextEntry::make('patient.species.name')
+                                                                ->state(fn($livewire) => $livewire?->patient?->species?->name)
                                                                 ->icon(PhosphorIcons::Cow)
                                                                 ->size(TextSize::Small)
                                                                 ->hiddenLabel(),
-                                                        ])
+                                                        ]),
                                                 ])->gap(false)->columnSpanFull(),
-                                            ])
+                                            ]),
                                     ]),
                             ]),
 
-                        Tabs\Tab::make('Stavke')
+                        Tabs\Tab::make('Items')
                             ->key('items')
                             ->icon(Heroicon::DocumentText)
-                            ->label(function ($get) {
-                                return 'Stavke (' . count($get('items') ?? []) . ')';
-                            })
+                            ->label(fn($get) => 'Items (' . count($get('items') ?? []) . ')')
                             ->schema([
                                 Section::make()
                                     ->contained()
                                     ->columns(4)
                                     ->schema([
                                         Select::make('service_id')
-                                            ->columnSpan(1)
-                                            ->live()
-                                            ->columnSpan(1)
-                                            ->hiddenLabel()
-                                            ->placeholder('Odaberite uslugu...')
                                             ->columnSpan(2)
+                                            ->live()
+                                            ->hiddenLabel()
+                                            ->placeholder('Select a service...')
                                             ->afterStateUpdated(function (Get $get, Set $set) {
                                                 $service = Service::find($get('service_id'));
                                                 $item = [
                                                     'priceable_id' => $service->id,
                                                     'priceable_type' => Service::class,
                                                     'name' => $service->name,
-                                                    'description' => 'Usluga',
+                                                    'description' => 'Service',
                                                     'quantity' => 1,
                                                     'price' => Number::format($service->currentPrice->price, 2),
                                                     'vat' => 25,
@@ -178,19 +168,15 @@ class MedicalDocumentForm
                                         SimpleAlert::make('no-items')
                                             ->warning()
                                             ->border()
-                                            ->title('Nema dodatnih stavki')
-                                            ->visible(function ($get) {
-                                                return !$get('items');
-                                            })->columnSpanFull(),
+                                            ->title('No items added')
+                                            ->visible(fn($get) => !$get('items'))
+                                            ->columnSpanFull(),
+
                                         ItemsRepeater::make('items')
-                                            ->visible(function ($get) {
-                                                return $get('items');
-                                            }),
-                                    ])
-                            ])
+                                            ->visible(fn($get) => $get('items')),
+                                    ]),
+                            ]),
                     ]),
-
-
             ]);
     }
 
@@ -198,33 +184,27 @@ class MedicalDocumentForm
     {
         return Action::make('load-from-template')
             ->link()
-            ->label('Učitaj iz predloška')
+            ->label('Load from template')
             ->modalIcon(Heroicon::Document)
-            ->modalDescription('Odaberite predložak za učitavanje')
+            ->modalDescription('Select a template to load')
             ->icon(Heroicon::Document)
-            ->modalSubmitActionLabel('Dodaj')
+            ->modalSubmitActionLabel('Add')
             ->schema([
-                Select::make('id')
-                    ->live(),
+                Select::make('id')->live(),
 
                 Grid::make(2)
-                    ->visible(function ($get) {
-                        return $get('id');
-                    })
+                    ->visible(fn($get) => $get('id'))
                     ->schema([
-                        TextEntry::make('subject')
-                            ->label('Naslov'),
-                        TextEntry::make('user')
-                            ->label('Kreirao'),
+                        TextEntry::make('subject')->label('Title'),
+                        TextEntry::make('user')->label('Created by'),
                         TextEntry::make('content')
                             ->columnSpanFull()
                             ->html()
-                            ->columnSpanFull()
-                            ->label('Sadržaj')
+                            ->label('Content'),
                     ]),
-
-            ])->action(function ($data, Set $set) {
-
+            ])
+            ->action(function ($data, Set $set) {
+                //
             });
     }
 
@@ -232,17 +212,17 @@ class MedicalDocumentForm
     {
         return Action::make('save-as-template')
             ->link()
-            ->label('Spremi kao predložak')
+            ->label('Save as template')
             ->modalIcon(Heroicon::DocumentMagnifyingGlass)
-            ->modalDescription('Upišite naziv predloška')
+            ->modalDescription('Enter a template name')
             ->icon(Heroicon::DocumentMagnifyingGlass)
             ->schema([
                 TextInput::make('subject')
-                    ->label('Naslov')
+                    ->label('Title')
                     ->required(),
-
-            ])->action(function ($data, Get $get) {
-
+            ])
+            ->action(function ($data, Get $get) {
+                //
             });
     }
 }

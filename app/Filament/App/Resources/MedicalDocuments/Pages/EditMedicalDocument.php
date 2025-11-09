@@ -51,7 +51,7 @@ class EditMedicalDocument extends EditRecord
         if (empty($this->form->getStateOnly(['items']))) {
             Notification::make()
                 ->danger()
-                ->title('Niste unijeli stavke')
+                ->title('No items were added.')
                 ->send();
             $this->halt();
         }

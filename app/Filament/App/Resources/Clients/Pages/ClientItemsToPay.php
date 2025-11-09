@@ -27,11 +27,11 @@ class ClientItemsToPay extends ManageRelatedRecords
 
     protected static string|BackedEnum|null $navigationIcon = PhosphorIcons::MoneyWavy;
 
-    protected static ?string $navigationLabel = 'Stavke za naplatu';
+    protected static ?string $navigationLabel = 'Items to pay';
 
-    protected static ?string $title = 'Stavke za naplatu';
+    protected static ?string $title = 'Items to pay';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Financije';
+    protected static string|UnitEnum|null $navigationGroup = 'Finance';
 
     public static function getNavigationBadgeColor(): string|array|null
     {
@@ -54,24 +54,24 @@ class ClientItemsToPay extends ManageRelatedRecords
             ->columns([
                 TextColumn::make('medicalDocument.code')
                     ->description(function ($record) {
-                        return 'Datum: ' . $record->medicalDocument->created_at->format('d.m.Y');
+                        return 'Date: ' . $record->medicalDocument->created_at->format('d.m.Y');
                     })
-                    ->label('Nalaz'),
+                    ->label('Medical record'),
 
                 TextColumn::make('medicalDocument.reservation.from')
                     ->dateTime('d.m.Y H:i')
                     ->description(function ($record) {
                         return $record->medicalDocument->reservation->from->diffForHumans();
                     })
-                    ->label('Rezervacija'),
+                    ->label('Reservation'),
 
                 TextColumn::make('priceable.name')
                     ->searchable()
                     ->sortable()
-                    ->label('Naziv'),
+                    ->label('Name'),
 
                 TextColumn::make('serviceProvider.full_name')
-                    ->label('Liječnik')
+                    ->label('Doctor')
                     ->sortable()
                     ->searchable()
                     ->icon(PhosphorIcons::User),
@@ -79,21 +79,21 @@ class ClientItemsToPay extends ManageRelatedRecords
                 TextColumn::make('quantity')
                     ->alignRight()
                     ->sortable()
-                    ->label('Količina'),
+                    ->label('Quantity'),
 
                 TextColumn::make('price')
                     ->alignRight()
                     ->searchable()
                     ->sortable()
                     ->money('EUR')
-                    ->label('Cijena'),
+                    ->label('Price'),
 
                 TextColumn::make('tax')
                     ->alignRight()
                     ->searchable()
                     ->sortable()
                     ->money('EUR')
-                    ->label('PDV'),
+                    ->label('VAT'),
 
                 TextColumn::make('total')
                     ->searchable()
@@ -102,21 +102,21 @@ class ClientItemsToPay extends ManageRelatedRecords
                     ->money('EUR')
                     ->summarize(Sum::make()->money('EUR', 100))
                     ->weight(FontWeight::Bold)
-                    ->label('Ukupno'),
+                    ->label('Total'),
             ])
             ->recordActions([
                 Action::make('medical-document')
                     ->hiddenLabel()
                     ->icon(Heroicon::DocumentText)
-                    ->tooltip('Otvori medicinski dokument')
+                    ->tooltip('Open medical document')
                     ->url(function ($record) {
                         return MedicalDocumentResource::getUrl('view', ['record' => $record->medicalDocument]);
-                    })
+                    }),
             ])
             ->headerActions([
                 Action::make('create-invoice')
                     ->icon(PhosphorIcons::MoneyWavy)
-                    ->label('Kreiraj račun')
+                    ->label('Create invoice')
                     ->accessSelectedRecords()
                     ->action(function (Collection $selectedRecords, Action $action) {
                         $recordIds = $selectedRecords->map(fn($record) => $record->id)->toArray();
@@ -124,7 +124,7 @@ class ClientItemsToPay extends ManageRelatedRecords
                         if (!$recordIds) {
                             Notification::make()
                                 ->icon(Heroicon::MinusCircle)
-                                ->title('Nema odabranih stavki za naplatu')
+                                ->title('No items selected for billing')
                                 ->warning()
                                 ->send();
 

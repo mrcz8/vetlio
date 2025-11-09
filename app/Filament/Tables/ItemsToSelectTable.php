@@ -19,38 +19,38 @@ class ItemsToSelectTable
             ->columns([
                 TextColumn::make('code')
                     ->searchable()
-                    ->label('Šifra'),
+                    ->label(__('tables.items_to_select.columns.code')),
 
                 TextColumn::make('name')
-                    ->label('Naziv')
+                    ->label(__('tables.items_to_select.columns.name'))
                     ->searchable(),
 
                 TextColumn::make('serviceGroup.name')
-                    ->label('Grupa')
+                    ->label(__('tables.items_to_select.columns.group'))
                     ->searchable(),
 
                 TextColumn::make('currentPrice.price')
                     ->money('EUR')
                     ->numeric(2)
                     ->alignRight()
-                    ->label('Cijena'),
+                    ->label(__('tables.items_to_select.columns.price')),
 
                 TextColumn::make('currentPrice.vat_percentage')
                     ->numeric(2)
                     ->alignRight()
                     ->suffix('%')
-                    ->label('PDV'),
+                    ->label(__('tables.items_to_select.columns.vat')),
 
                 TextColumn::make('currentPrice.price_with_vat')
                     ->alignRight()
                     ->money('EUR')
                     ->weight(FontWeight::Bold)
-                    ->label('Cijena sa PDV'),
+                    ->label(__('tables.items_to_select.columns.price_with_vat')),
             ])
             ->filters([
                 SelectFilter::make('service_group_id')
-                    ->label('Grupa')
-                    ->relationship('serviceGroup', 'name')
+                    ->label(__('tables.items_to_select.filters.group'))
+                    ->relationship('serviceGroup', 'name'),
             ])
             ->headerActions([
                 //
