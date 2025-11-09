@@ -33,13 +33,13 @@ class PriceListResource extends Resource
 
     protected static bool $isScopedToTenant = false;
 
-    protected static ?string $navigationLabel = 'Cjenici';
+    protected static ?string $navigationLabel = 'Price Lists';
 
-    protected static ?string $label = 'cjenik';
+    protected static ?string $label = 'price list';
 
-    protected static ?string $pluralLabel = 'cjenici';
+    protected static ?string $pluralLabel = 'price lists';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Financije';
+    protected static string|UnitEnum|null $navigationGroup = 'Finance';
 
     public static function form(Schema $schema): Schema
     {
@@ -59,7 +59,7 @@ class PriceListResource extends Resource
     public static function getRelations(): array
     {
         return [
-            PricesRelationManager::make()
+            PricesRelationManager::make(),
         ];
     }
 

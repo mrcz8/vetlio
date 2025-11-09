@@ -21,20 +21,21 @@ class PriceListsTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('Naziv')
+                    ->label('Name')
                     ->searchable(),
 
                 IconColumn::make('active')
-                    ->label('Aktivan')
+                    ->label('Active')
                     ->boolean(),
 
                 TextColumn::make('branches.name')
-                    ->label('Poslovnice'),
+                    ->label('Branches'),
 
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -46,7 +47,7 @@ class PriceListsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make()
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

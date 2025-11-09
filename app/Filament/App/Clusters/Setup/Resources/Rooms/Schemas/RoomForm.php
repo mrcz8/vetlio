@@ -15,25 +15,25 @@ class RoomForm
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->label('Naziv')
+                    ->label('Name')
                     ->required(),
 
                 TextInput::make('code')
-                    ->label('Šifra')
+                    ->label('Code')
                     ->required(),
 
                 Select::make('branch_id')
                     ->relationship('branch', 'name')
-                    ->label('Poslovnica')
+                    ->label('Branch')
                     ->required(),
 
                 ColorPicker::make('color')
-                    ->label('Boja prostorije')
+                    ->label('Room Color')
                     ->required(),
 
                 Toggle::make('active')
-                    ->label('Aktivna')
-                    ->default(true)
+                    ->label('Active')
+                    ->default(true),
             ]);
     }
 }

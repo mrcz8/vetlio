@@ -2,7 +2,6 @@
 
 namespace App\Filament\App\Clusters\Setup\Resources\Services\RelationManagers;
 
-use App\Helpers\PriceHelper;
 use App\Helpers\PriceHelpers;
 use App\Models\PriceList;
 use App\Rules\ValidPriceDate;
@@ -26,11 +25,11 @@ class PricesRelationManager extends RelationManager
 {
     protected static string $relationship = 'prices';
 
-    protected static ?string $label = 'cijena';
+    protected static ?string $label = 'price';
 
-    protected static ?string $pluralLabel = 'cijene';
+    protected static ?string $pluralLabel = 'prices';
 
-    protected static ?string $title = 'Cijene';
+    protected static ?string $title = 'Prices';
 
     public ?int $productId;
 
@@ -45,10 +44,10 @@ class PricesRelationManager extends RelationManager
                     ->relationship('priceList', 'name')
                     ->native(false)
                     ->required()
-                    ->label('Cjenik'),
+                    ->label('Price List'),
 
                 DatePicker::make('valid_from_at')
-                    ->label('Vrijedi od')
+                    ->label('Valid From')
                     ->required()
                     ->rules(fn($record) => [
                         new ValidPriceDate($record, $this->getOwnerRecord()),
@@ -65,7 +64,7 @@ class PricesRelationManager extends RelationManager
                     })
                     ->numeric(2)
                     ->suffix(auth()->user()->organisation->currency->code)
-                    ->label('Cijena'),
+                    ->label('Net Price'),
 
                 TextInput::make('vat_percentage')
                     ->required()
@@ -82,6 +81,7 @@ class PricesRelationManager extends RelationManager
                             $set('price_with_vat', PriceHelpers::vatFromNet($price, $state));
                             return;
                         }
+
                         if ($priceWithVat != null) {
                             $set('price', PriceHelpers::netFromVat($priceWithVat, $state));
                         }
@@ -90,7 +90,7 @@ class PricesRelationManager extends RelationManager
                     ->default(25)
                     ->inputMode('decimal')
                     ->suffix('%')
-                    ->label('PDV (%)'),
+                    ->label('VAT (%)'),
 
                 TextInput::make('price_with_vat')
                     ->required()
@@ -99,12 +99,11 @@ class PricesRelationManager extends RelationManager
                     ->afterStateUpdated(function ($state, Get $get, callable $set) {
                         if ($get('vat_percentage') != null) {
                             $price = $state / (1 + ($get('vat_percentage') / 100));
-
                             $set('price', $price);
                         }
                     })
                     ->live(true)
-                    ->label('Cijena sa PDV'),
+                    ->label('Price with VAT'),
             ]);
     }
 
@@ -112,11 +111,13 @@ class PricesRelationManager extends RelationManager
     {
         return $table
             ->modifyQueryUsing(function (Builder $query) {
-                if (class_basename($this->getOwnerRecord()) == "Service") {
+                $owner = class_basename($this->getOwnerRecord());
+
+                if ($owner === "Service" || $owner === "Product") {
                     return $query->whereMorphedTo('priceable', $this->getOwnerRecord());
-                } else if (class_basename($this->getOwnerRecord()) == "Product") {
-                    return $query->whereMorphedTo('priceable', $this->getOwnerRecord());
-                } else if (class_basename($this->getOwnerRecord()) == "PriceList") {
+                }
+
+                if ($owner === "PriceList") {
                     return $query->where('price_list_id', $this->getOwnerRecord()->id);
                 }
 
@@ -125,38 +126,37 @@ class PricesRelationManager extends RelationManager
             ->recordTitleAttribute('price')
             ->columns([
                 TextColumn::make('priceList.name')
-                    ->label('Cjenik'),
+                    ->label('Price List'),
 
                 TextColumn::make('valid_from_at')
                     ->date()
-                    ->label('Vrijedi od'),
+                    ->label('Valid From'),
 
                 TextColumn::make('price')
                     ->money('EUR')
-                    ->label('Cijena'),
+                    ->label('Net Price'),
 
                 TextColumn::make('vat_percentage')
                     ->numeric()
                     ->suffix('%')
-                    ->label('PDV'),
+                    ->label('VAT'),
 
                 TextColumn::make('price_with_vat')
                     ->money('EUR')
                     ->weight(FontWeight::Bold)
-                    ->label('Cijena')
-                    ->label('Cijena sa PDV'),
+                    ->label('Price with VAT'),
             ])
             ->filters([
                 SelectFilter::make('price_list_id')
-                    ->label('Cjenik')
+                    ->label('Price List')
                     ->options(PriceList::pluck('name', 'id'))
                     ->native(false)
-                    ->default(Filament::getTenant()->price_list_id)
+                    ->default(Filament::getTenant()->price_list_id),
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->label('Nova cijena')
-                    ->modalHeading('Nova cijena'),
+                    ->label('New Price')
+                    ->modalHeading('Add New Price'),
             ])
             ->recordActions([
                 EditAction::make(),

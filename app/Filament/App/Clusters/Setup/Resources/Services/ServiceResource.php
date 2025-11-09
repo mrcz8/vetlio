@@ -33,13 +33,13 @@ class ServiceResource extends Resource
 
     protected static bool $isScopedToTenant = false;
 
-    protected static ?string $navigationLabel = 'Usluge';
+    protected static ?string $navigationLabel = 'Services';
 
-    protected static string | UnitEnum | null $navigationGroup = 'Usluge';
+    protected static string|UnitEnum|null $navigationGroup = 'Services';
 
-    protected static ?string $label = 'usluga';
+    protected static ?string $label = 'service';
 
-    protected static ?string $pluralLabel = 'usluge';
+    protected static ?string $pluralLabel = 'services';
 
     public static function getGloballySearchableAttributes(): array
     {
@@ -53,14 +53,16 @@ class ServiceResource extends Resource
 
     public static function getGlobalSearchEloquentQuery(): Builder
     {
-        return parent::getGlobalSearchEloquentQuery()->with(['currentPrice', 'serviceGroup']);;
+        return parent::getGlobalSearchEloquentQuery()->with(['currentPrice', 'serviceGroup']);
     }
 
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'Grupa' => $record->serviceGroup->name,
-            'Cijena' => $record->currentPrice ? Number::currency($record->currentPrice->price_with_vat) : 'Nema cijene',
+            'Group' => $record->serviceGroup->name,
+            'Price' => $record->currentPrice
+                ? Number::currency($record->currentPrice->price_with_vat)
+                : 'No price available',
         ];
     }
 
@@ -77,7 +79,7 @@ class ServiceResource extends Resource
     public static function getRelations(): array
     {
         return [
-            PricesRelationManager::make()
+            PricesRelationManager::make(),
         ];
     }
 

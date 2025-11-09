@@ -32,13 +32,13 @@ class UserResource extends Resource
 
     protected static bool $isScopedToTenant = false;
 
-    protected static ?string $navigationLabel = 'Djelatnici';
+    protected static ?string $navigationLabel = 'Users';
 
-    protected static ?string $label = 'djelatnik';
+    protected static ?string $label = 'user';
 
-    protected static ?string $pluralLabel = 'djelatnici';
+    protected static ?string $pluralLabel = 'users';
 
-    protected static string | UnitEnum | null $navigationGroup = 'Tvrtka';
+    protected static string | UnitEnum | null $navigationGroup = 'Clinic';
 
     public static function form(Schema $schema): Schema
     {

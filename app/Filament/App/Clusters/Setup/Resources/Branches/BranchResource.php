@@ -29,13 +29,13 @@ class BranchResource extends Resource
 
     protected static bool $isScopedToTenant = false;
 
-    protected static ?string $navigationLabel = 'Poslovnice';
+    protected static ?string $navigationLabel = 'Branches';
 
-    protected static ?string $label = 'poslovnica';
+    protected static ?string $label = 'branch';
 
-    protected static ?string $pluralLabel = 'poslovnice';
+    protected static ?string $pluralLabel = 'branches';
 
-    protected static string|null|\UnitEnum $navigationGroup = 'Tvrtka';
+    protected static string|null|\UnitEnum $navigationGroup = 'Clinic';
 
     public static function form(Schema $schema): Schema
     {
@@ -58,8 +58,8 @@ class BranchResource extends Resource
     {
         return [
             'index' => ListBranches::route('/'),
-            //'create' => CreateBranch::route('/create'),
-            //'edit' => EditBranch::route('/{record}/edit'),
+            // 'create' => CreateBranch::route('/create'),
+            // 'edit' => EditBranch::route('/{record}/edit'),
         ];
     }
 

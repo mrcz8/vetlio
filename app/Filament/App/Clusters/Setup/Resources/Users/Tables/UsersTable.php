@@ -29,28 +29,28 @@ class UsersTable
 
                 TextColumn::make('code')
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->label('Šifra'),
+                    ->label('Code'),
 
                 TextColumn::make('fullName')
                     ->description(function (User $record) {
                         return $record->titule;
                     })
-                    ->label('Djelatnik'),
+                    ->label('User'),
 
                 TextColumn::make('email')
                     ->searchable()
                     ->label('Email'),
 
                 ToggleColumn::make('active')
-                    ->label('Aktivan'),
+                    ->label('Active'),
 
                 IconColumn::make('service_provider')
                     ->boolean()
-                    ->label('Veterinar')
+                    ->label('Veterinarian')
                     ->alignCenter(),
 
                 TextColumn::make('primaryBranch.name')
-                    ->label('Primarna poslovnica'),
+                    ->label('Primary Branch'),
 
                 CreatedAtColumn::make('created_at'),
 

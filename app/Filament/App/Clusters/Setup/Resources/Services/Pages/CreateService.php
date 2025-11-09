@@ -9,7 +9,7 @@ class CreateService extends CreateRecord
 {
     protected static string $resource = ServiceResource::class;
 
-    protected static ?string $title = 'Nova usluga';
+    protected static ?string $title = 'New service';
 
     public function getSubNavigation(): array
     {

@@ -26,45 +26,42 @@ class ServiceForm
                     ->columns(2)
                     ->schema([
                         TextInput::make('name')
-                            ->label('Naziv')
+                            ->label('Name')
                             ->required(),
 
                         TextInput::make('code')
-                            ->label('Šifra')
+                            ->label('Code')
                             ->required(),
 
                         Select::make('service_group_id')
                             ->relationship('serviceGroup', 'name')
-                            ->label('Grupa')
+                            ->label('Group')
                             ->createOptionForm([
                                 TextInput::make('name')
-                                    ->label('Naziv')
+                                    ->label('Name')
                                     ->required(),
                             ])
-                            ->createOptionUsing(function (array $data) {
-                                return ServiceGroup::create($data)->id;
-                            })
+                            ->createOptionUsing(fn(array $data) => ServiceGroup::create($data)->id)
                             ->required(),
 
                         Toggle::make('active')
                             ->inline(false)
-                            ->label('Aktivno')
+                            ->label('Active')
                             ->default(true)
                             ->required(),
 
                         Grid::make(2)
                             ->schema([
                                 TimePicker::make('duration')
-                                    ->default("00:15")
-                                    ->label('Trajanje')
+                                    ->default('00:15')
+                                    ->label('Duration')
                                     ->seconds(false)
                                     ->native(false)
                                     ->minutesStep(5)
                                     ->required(),
 
                                 ColorPicker::make('color')
-                                    ->label('Boja'),
-
+                                    ->label('Color'),
                             ]),
 
                         TextEntry::make('placeholder')
@@ -74,13 +71,13 @@ class ServiceForm
                             ->state(new HtmlString('<hr class="border-gray-200"/>')),
 
                         CheckboxList::make('users')
-                            ->label('Djelatnici')
+                            ->label('Staff')
                             ->relationship('users', 'first_name'),
 
                         CheckboxList::make('rooms')
-                            ->label('Prostorije')
-                            ->relationship('rooms', 'name')
-                    ])
+                            ->label('Rooms')
+                            ->relationship('rooms', 'name'),
+                    ]),
             ]);
     }
 }

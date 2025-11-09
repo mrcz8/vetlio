@@ -34,13 +34,13 @@ class BankResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static ?string $label = 'banka';
+    protected static ?string $label = 'bank';
 
-    protected static ?string $pluralLabel = 'banke';
+    protected static ?string $pluralLabel = 'banks';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Financije';
+    protected static string|UnitEnum|null $navigationGroup = 'Finance';
 
-    protected static ?string $navigationLabel = 'Banke';
+    protected static ?string $navigationLabel = 'Banks';
 
     protected static bool $isScopedToTenant = false;
 
@@ -50,13 +50,13 @@ class BankResource extends Resource
             ->components([
                 Flex::make([
                     TextInput::make('name')
-                        ->label('Naziv')
+                        ->label('Name')
                         ->required(),
 
                     Toggle::make('active')
                         ->inline(false)
                         ->default(true)
-                        ->label('Aktivna'),
+                        ->label('Active'),
                 ])->columnSpanFull(),
 
                 TextInput::make('iban')
@@ -67,9 +67,8 @@ class BankResource extends Resource
 
                 TextArea::make('note')
                     ->columnSpanFull()
-                    ->label('Napomena')
+                    ->label('Note')
                     ->rows(3),
-
             ]);
     }
 
@@ -79,7 +78,7 @@ class BankResource extends Resource
             ->recordTitleAttribute('name')
             ->columns([
                 TextColumn::make('name')
-                    ->label('Naziv')
+                    ->label('Name')
                     ->searchable(),
 
                 TextColumn::make('iban')
@@ -87,11 +86,11 @@ class BankResource extends Resource
                     ->searchable(),
 
                 ToggleColumn::make('active')
-                    ->label('Aktivna'),
+                    ->label('Active'),
 
                 TextColumn::make('note')
                     ->searchable()
-                    ->label('Napomena'),
+                    ->label('Note'),
 
                 CreatedAtColumn::make('created_at'),
                 UpdatedAtColumn::make('updated_at'),

@@ -34,44 +34,42 @@ class ServicesTable
                     ->width('30px'),
 
                 TextColumn::make('name')
-                    ->label('Naziv')
+                    ->label('Name')
                     ->sortable()
-                    ->description(function ($record) {
-                        return $record->code;
-                    })
+                    ->description(fn($record) => $record->code)
                     ->searchable(),
 
                 TextColumn::make('serviceGroup.name')
-                    ->label('Grupa')
+                    ->label('Group')
                     ->searchable(),
 
                 ToggleColumn::make('active')
-                    ->label('Aktivno'),
+                    ->label('Active'),
 
                 TextColumn::make('duration')
                     ->time('H:i')
-                    ->label('Trajanje')
+                    ->label('Duration')
                     ->sortable(),
 
                 TextColumn::make('users.full_name')
-                    ->label('Djelatnici'),
+                    ->label('Staff'),
 
                 TextColumn::make('rooms.name')
-                    ->label('Prostorije'),
+                    ->label('Rooms'),
 
                 TextColumn::make('currentPrice.price')
                     ->money('EUR')
-                    ->label('Cijena'),
+                    ->label('Price'),
 
                 TextColumn::make('currentPrice.vat_percentage')
                     ->numeric()
                     ->suffix('%')
-                    ->label('PDV'),
+                    ->label('VAT'),
 
                 TextColumn::make('currentPrice.price_with_vat')
                     ->money('EUR')
                     ->weight(FontWeight::Bold)
-                    ->label('Cijena sa PDV'),
+                    ->label('Price with VAT'),
 
                 CreatedAtColumn::make('created_at'),
                 UpdatedAtColumn::make('updated_at'),
@@ -81,24 +79,24 @@ class ServicesTable
                     ->options(ServiceGroup::pluck('name', 'id'))
                     ->native(false)
                     ->multiple()
-                    ->label('Grupa'),
+                    ->label('Group'),
 
                 SelectFilter::make('users')
                     ->relationship('users', 'first_name')
                     ->getOptionLabelFromRecordUsing(fn(User $record) => $record->full_name)
                     ->native(false)
                     ->multiple()
-                    ->label('Djelatnici')
+                    ->label('Staff'),
             ])
             ->recordActions([
                 RelationManagerAction::make('lesson-relation-manager')
-                    ->label('Cijene')
+                    ->label('Prices')
                     ->compact()
                     ->slideOver()
                     ->icon(Heroicon::CurrencyEuro)
                     ->relationManager(PricesRelationManager::make()),
                 EditAction::make(),
-                DeleteAction::make()
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -13,7 +13,7 @@ class EditService extends EditRecord
 {
     protected static string $resource = ServiceResource::class;
 
-    protected static ?string $title = 'Izmjena usluge';
+    protected static ?string $title = 'Edit service';
 
     public function getSubNavigation(): array
     {

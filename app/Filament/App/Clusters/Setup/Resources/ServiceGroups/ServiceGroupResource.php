@@ -39,24 +39,24 @@ class ServiceGroupResource extends Resource
 
     protected static bool $isScopedToTenant = false;
 
-    protected static ?string $navigationLabel = 'Grupe usluga';
+    protected static ?string $navigationLabel = 'Service groups';
 
-    protected static ?string $label = 'grupa';
+    protected static ?string $label = 'group';
 
-    protected static ?string $pluralLabel = 'grupe';
+    protected static ?string $pluralLabel = 'groups';
 
-    protected static string | UnitEnum | null $navigationGroup = 'Usluge';
+    protected static string | UnitEnum | null $navigationGroup = 'Services';
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->label('Naziv')
+                    ->label('Name')
                     ->required(),
 
                 ColorPicker::make('color')
-                    ->label('Boja')
+                    ->label('Color')
             ]);
     }
 
@@ -70,7 +70,7 @@ class ServiceGroupResource extends Resource
                     ->width('30px'),
 
                 TextColumn::make('name')
-                    ->label('Naziv')
+                    ->label('Name')
                     ->searchable(),
 
                 TextColumn::make('created_at')

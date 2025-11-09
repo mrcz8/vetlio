@@ -27,13 +27,13 @@ class RoomResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static ?string $navigationLabel = 'Prostorije';
+    protected static ?string $navigationLabel = 'Rooms';
 
-    protected static ?string $label = 'prostorija';
+    protected static ?string $label = 'room';
 
-    protected static ?string $pluralLabel = 'prostorije';
+    protected static ?string $pluralLabel = 'rooms';
 
-    protected static string|null|\UnitEnum $navigationGroup = 'Tvrtka';
+    protected static string|null|\UnitEnum $navigationGroup = 'Clinic';
 
     public static function form(Schema $schema): Schema
     {

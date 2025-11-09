@@ -16,32 +16,32 @@ class BranchesTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('Naziv')
+                    ->label('Name')
                     ->sortable()
                     ->searchable(),
 
                 TextColumn::make('full_address')
-                    ->label('Adresa')
+                    ->label('Address')
                     ->searchable(),
 
                 IconColumn::make('active')
                     ->sortable()
-                    ->label('Aktivna')
+                    ->label('Active')
                     ->boolean(),
 
                 TextColumn::make('branch_mark')
                     ->badge()
-                    ->label('Oznaka poslovnice'),
+                    ->label('Branch Code'),
 
                 TextColumn::make('created_at')
                     ->dateTime()
-                    ->label('Datum kreiranja')
+                    ->label('Created At')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('updated_at')
                     ->dateTime()
-                    ->label('Datum izmjene')
+                    ->label('Last Updated')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

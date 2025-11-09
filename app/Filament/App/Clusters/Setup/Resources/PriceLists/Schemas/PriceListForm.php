@@ -18,18 +18,18 @@ class PriceListForm
                     ->columnSpanFull()
                     ->schema([
                         TextInput::make('name')
-                            ->label('Naziv')
+                            ->label('Name')
                             ->required(),
 
                         Toggle::make('active')
                             ->default(true)
-                            ->label('Aktivan')
+                            ->label('Active')
                             ->required(),
 
                         CheckboxList::make('brances')
                             ->relationship('branches', 'name')
                             ->required()
-                            ->label('Poslovnice'),
+                            ->label('Branches'),
                     ])
             ]);
     }

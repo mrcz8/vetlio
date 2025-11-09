@@ -15,35 +15,34 @@ class BranchForm
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->label('Naziv')
+                    ->label('Name')
                     ->required(),
 
                 TextInput::make('address')
-                    ->label('Adresa'),
+                    ->label('Address'),
 
                 TextInput::make('city')
-                    ->label('Grad'),
+                    ->label('City'),
 
                 TextInput::make('postal_code')
-                    ->label('Poštanski broj'),
+                    ->label('Postal Code'),
 
                 TextInput::make('branch_mark')
                     ->required()
-                    ->hint('Sekvenca se resetirati ako se promjeni')
+                    ->hint('Sequence will reset if changed')
                     ->unique(ignoreRecord: true)
-                    ->label('Oznaka poslovnice'),
+                    ->label('Branch Code'),
 
                 Select::make('price_list_id')
-                    ->label('Primarni cjenik')
+                    ->label('Primary Price List')
                     ->required()
                     ->options(PriceList::pluck('name', 'id')),
 
                 Toggle::make('active')
                     ->default(true)
                     ->inline(false)
-                    ->label('Aktivna')
+                    ->label('Active')
                     ->required(),
-
             ]);
     }
 }

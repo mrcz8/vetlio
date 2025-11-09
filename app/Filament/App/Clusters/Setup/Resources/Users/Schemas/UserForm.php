@@ -22,51 +22,51 @@ class UserForm
         return $schema
             ->components([
                 TextInput::make('first_name')
-                    ->label('Ime')
+                    ->label('First Name')
                     ->required()
                     ->maxLength(255),
 
                 TextInput::make('last_name')
-                    ->label('Prezime')
+                    ->label('Last Name')
                     ->required()
                     ->maxLength(255),
 
                 TextInput::make('titule')
-                    ->label('Titula/Potpis')
+                    ->label('Title / Signature')
                     ->columnSpanFull(),
 
                 ToggleButtons::make('gender_id')
-                    ->label('Spol')
+                    ->label('Gender')
                     ->inline()
                     ->default(3)
                     ->options([
-                        1 => 'Muški',
-                        2 => 'Ženski',
-                        3 => 'Neodabrano'
+                        1 => 'Male',
+                        2 => 'Female',
+                        3 => 'Unspecified',
                     ]),
 
                 TextInput::make('oib')
-                    ->label('OIB')
+                    ->label('OIB (Tax ID)')
                     ->unique('users', 'oib', ignoreRecord: true, modifyRuleUsing: function ($rule) {
                         return $rule->where('organisation_id', auth()->user()->organisation_id);
                     })
                     ->validationMessages([
-                        'unique' => 'OIB se već koristi'
+                        'unique' => 'This OIB is already in use.',
                     ])
                     ->live(true)
                     ->minLength(11)
                     ->maxLength(11),
 
                 DatePicker::make('date_of_birth')
-                    ->label('Datum rođenja'),
+                    ->label('Date of Birth'),
 
                 TextInput::make('name')
-                    ->label('Korisničko ime')
+                    ->label('Username')
                     ->unique('users', 'name', ignoreRecord: true, modifyRuleUsing: function ($rule) {
                         return $rule->where('organisation_id', auth()->user()->organisation_id);
                     })
                     ->validationMessages([
-                        'unique' => 'Korisničko ime se već koristi'
+                        'unique' => 'This username is already taken.',
                     ])
                     ->required()
                     ->maxLength(255),
@@ -78,18 +78,18 @@ class UserForm
                         return $rule->where('organisation_id', auth()->user()->organisation_id);
                     })
                     ->validationMessages([
-                        'unique' => 'Email adresa se već koristi'
+                        'unique' => 'This email address is already registered.',
                     ])
                     ->required()
                     ->maxLength(255),
 
                 Select::make('branches')
-                    ->label('Poslovnice')
+                    ->label('Branches')
                     ->relationship('branches', 'name')
                     ->multiple()
                     ->preload()
                     ->validationMessages([
-                        'required' => 'Potrebno je odabrati min. 1 poslovnicu'
+                        'required' => 'At least one branch must be selected.',
                     ])
                     ->afterStateUpdated(function (Select $component) {
                         $select = $component->getContainer()->getComponent('primary_branch_id');
@@ -99,10 +99,10 @@ class UserForm
                     ->required(),
 
                 Select::make('primary_branch_id')
-                    ->label('Primarna poslovnica')
+                    ->label('Primary Branch')
                     ->key('primary_branch_id')
                     ->validationMessages([
-                        'required' => 'Primarna poslovnica nije odabrana'
+                        'required' => 'Primary branch is required.',
                     ])
                     ->extraInputAttributes(['wire:key' => Str::random(10)])
                     ->disabled(function (Get $get) {
@@ -110,23 +110,18 @@ class UserForm
                     })
                     ->options(function (Get $get, $operation) {
                         if ($get('branches')) {
-                            $branchIds = collect($get('branches'))->map(function ($branch) {
-                                return intval($branch);
-                            });
-
-                            return Branch::whereIn('id', $branchIds->toArray())->get()->pluck('name', 'id');
+                            $branchIds = collect($get('branches'))->map(fn($branch) => (int) $branch);
+                            return Branch::whereIn('id', $branchIds->toArray())->pluck('name', 'id');
                         }
 
-                        return Branch::get()->pluck('name', 'id');
+                        return Branch::pluck('name', 'id');
                     })
                     ->native(false)
                     ->required(),
 
                 ColorPicker::make('color')
-                    ->label('Boja')
-                    ->required(function (Get $get) {
-                        return $get('service_provider');
-                    }),
+                    ->label('Color')
+                    ->required(fn(Get $get) => $get('service_provider')),
 
                 Grid::make(3)
                     ->columnSpan(1)
@@ -134,37 +129,33 @@ class UserForm
                         Toggle::make('active')
                             ->default(true)
                             ->inline(false)
-                            ->label('Aktivni djelatnik'),
+                            ->label('Active Employee'),
 
                         Toggle::make('service_provider')
                             ->default(false)
                             ->live()
                             ->onColor('success')
                             ->inline(false)
-                            ->label('Veterinar'),
+                            ->label('Veterinarian'),
 
                         Toggle::make('administrator')
                             ->default(false)
                             ->onColor('success')
                             ->inline(false)
-                            ->disabled(function () {
-                                return !auth()->user()->administrator;
-                            })
+                            ->disabled(fn() => ! auth()->user()->administrator)
                             ->label('Administrator'),
 
                         Toggle::make('fiscalization_enabled')
                             ->default(false)
                             ->inline(false)
-                            ->label('Omogućena fiskalizacija')
-                            ->disabled(function ($get) {
-                                return !$get('oib');
-                            }),
+                            ->label('Fiscalization Enabled')
+                            ->disabled(fn($get) => ! $get('oib')),
                     ]),
 
                 FileUpload::make('signature_path')
                     ->columnSpanFull()
-                    ->hint('Učitajte potpis za prikaz na nalazu.')
-                    ->label('Potpis')
+                    ->hint('Upload a signature image to be displayed on medical documents.')
+                    ->label('Signature'),
             ]);
     }
 }

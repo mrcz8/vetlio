@@ -27,34 +27,34 @@ class RoomsTable
                     ->alignCenter(),
 
                 TextColumn::make('name')
-                    ->label('Naziv')
+                    ->label('Name')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('branch.name')
-                    ->label('Poslovnica')
+                    ->label('Branch')
                     ->searchable()
                     ->sortable(),
 
                 IconColumn::make('active')
-                    ->label('Aktivna')
+                    ->label('Active')
                     ->boolean(),
 
                 CreatedAtColumn::make('created_at'),
-                UpdatedAtColumn::make('updated_at')
+                UpdatedAtColumn::make('updated_at'),
             ])
             ->filters([
-        TrashedFilter::make(),
-    ])
-        ->recordActions([
-            EditAction::make(),
-        ])
-        ->toolbarActions([
-            BulkActionGroup::make([
-                DeleteBulkAction::make(),
-                ForceDeleteBulkAction::make(),
-                RestoreBulkAction::make(),
-            ]),
-        ]);
+                TrashedFilter::make(),
+            ])
+            ->recordActions([
+                EditAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                ]),
+            ]);
     }
 }

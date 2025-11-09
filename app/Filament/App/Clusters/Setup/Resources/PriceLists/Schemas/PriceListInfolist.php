@@ -13,19 +13,19 @@ class PriceListInfolist
         return $schema
             ->components([
                 TextEntry::make('name')
-                    ->label('Naziv'),
+                    ->label('Name'),
 
                 IconEntry::make('active')
-                    ->label('Aktivan')
+                    ->label('Active')
                     ->boolean(),
 
                 TextEntry::make('created_at')
-                    ->label('Datum kreiranja')
+                    ->label('Created at')
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
                     ->dateTime()
-                    ->label('Datum izmjene')
+                    ->label('Updated at')
                     ->placeholder('-'),
             ]);
     }
