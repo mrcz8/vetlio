@@ -6,6 +6,7 @@ use App\Enums\Icons\PhosphorIcons;
 use App\Filament\App\Actions\CancelReservationAction;
 use App\Models\Reservation;
 use BackedEnum;
+use Filament\Actions\CreateAction;
 use Filament\Actions\ViewAction;
 use Filament\Pages\Page;
 use Filament\Support\Enums\FontWeight;
@@ -29,6 +30,15 @@ class Appointments extends Page implements HasTable
     public function getSubheading(): string|Htmlable|null
     {
         return 'Keep track of your upcoming vet visits and easily book new appointments for your pets.';
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            CreateAction::make()
+                ->icon(PhosphorIcons::CalendarPlus)
+                ->label('New appointment'),
+        ];
     }
 
     public function table(Table $table): Table

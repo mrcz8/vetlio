@@ -3,8 +3,6 @@
 namespace App\Filament\Portal\Resources\Patients;
 
 use App\Enums\Icons\PhosphorIcons;
-use App\Filament\Portal\Resources\Patients\Pages\CreatePatient;
-use App\Filament\Portal\Resources\Patients\Pages\EditPatient;
 use App\Filament\Portal\Resources\Patients\Pages\ListPatients;
 use App\Filament\Portal\Resources\Patients\Pages\ViewPatient;
 use App\Filament\Portal\Resources\Patients\Schemas\PatientForm;
@@ -27,6 +25,8 @@ class PatientResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static ?int $navigationSort = 1;
+
+    protected static ?string $breadcrumb = null;
 
     public static function getModelLabel(): string
     {
@@ -64,9 +64,9 @@ class PatientResource extends Resource
     {
         return [
             'index' => ListPatients::route('/'),
-            'create' => CreatePatient::route('/create'),
+            //'create' => CreatePatient::route('/create'),
             'view' => ViewPatient::route('/{record}'),
-            'edit' => EditPatient::route('/{record}/edit'),
+            //'edit' => EditPatient::route('/{record}/edit'),
         ];
     }
 
