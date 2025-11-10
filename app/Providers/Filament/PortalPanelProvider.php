@@ -2,14 +2,15 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Portal\Pages\Dashboard;
 use App\Http\Middleware\IdentifyTenant;
+use App\Models\Client;
 use Devonab\FilamentEasyFooter\EasyFooterPlugin;
 use DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -29,12 +30,15 @@ class PortalPanelProvider extends PanelProvider
         return $panel
             ->id('portal')
             ->path('portal')
+            ->login()
+            ->passwordReset()
+            ->emailVerification()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Green,
             ])
             ->font('Mulish')
             ->domain(request()->server('HTTP_HOST'))
-            ->topNavigation(true)
+            ->topNavigation()
             ->databaseNotifications()
             ->viteTheme('resources/css/filament/portal/theme.css')
             ->discoverResources(in: app_path('Filament/Portal/Resources'), for: 'App\Filament\Portal\Resources')
@@ -52,6 +56,7 @@ class PortalPanelProvider extends PanelProvider
                     ->withGithub(showLogo: true, showUrl: true)
                     ->withLoadTime(),
                 FilamentDeveloperLoginsPlugin::make()
+                    ->modelClass(Client::class)
                     ->enabled(app()->isLocal())
                     ->switchable(false)
                     ->users([
