@@ -2,17 +2,14 @@
 
 namespace App\Filament\Portal\Resources\Patients\Tables;
 
-use App\Enums\PatientGender;
 use App\Models\Patient;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
 
@@ -38,9 +35,6 @@ class PatientsTable
 
                 TextColumn::make('gender_id')
                     ->sortable()
-                    ->formatStateUsing(function ($state) {
-                        return PatientGender::from($state)->getLabel();
-                    })
                     ->searchable()
                     ->label('Gender'),
 
@@ -50,7 +44,7 @@ class PatientsTable
                     ->sortable()
                     ->description(function ($state) {
                         if ($state != null) {
-                            return Carbon::parse($state)->diffInYears(now()) . ' years old';
+                            return Carbon::parse($state)->age . ' years old';
                         }
 
                         return null;
@@ -58,20 +52,21 @@ class PatientsTable
 
                 TextColumn::make('remarks')
                     ->searchable()
-                    ->label('Notes'),
-            ])
-            ->filters([
-                TrashedFilter::make(),
+                    ->label('Remarks'),
+
+                TextColumn::make('allergies')
+                    ->label('Allergies')
+                    ->badge()
+                    ->color('danger'),
             ])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                DeleteAction::make()
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
                 ]),
             ]);
     }

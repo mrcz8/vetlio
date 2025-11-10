@@ -101,8 +101,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         ViewAction::configureUsing(function (ViewAction $action) {
-            //$action->label('');
-            //$action->hiddenLabel();
+            $action->hiddenLabel();
             $action->modalHeading('View');
             $action->icon(Heroicon::Eye);
             $action->slideOver();

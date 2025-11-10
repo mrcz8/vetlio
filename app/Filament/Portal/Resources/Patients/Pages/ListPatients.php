@@ -26,7 +26,14 @@ class ListPatients extends ListRecords
     {
         return [
             CreateAction::make()
+                ->mutateDataUsing(function ($data) {
+                    $data['client_id'] = auth()->id();
+
+                    return $data;
+                })
+                ->modalHeading('Add new pet')
                 ->icon(PhosphorIcons::Dog)
+                ->modalIcon(PhosphorIcons::Dog)
                 ->label('Add new pet'),
         ];
     }

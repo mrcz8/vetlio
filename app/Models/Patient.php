@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PatientGender;
 use App\Traits\Organisationable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,6 +38,7 @@ class Patient extends Model
     ];
 
     protected $casts = [
+        'gender_id' => PatientGender::class,
         'date_of_birth' => 'date',
     ];
 
