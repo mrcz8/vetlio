@@ -26,6 +26,8 @@ class PatientResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    protected static ?int $navigationSort = 1;
+
     public static function getModelLabel(): string
     {
         return 'Pet';
