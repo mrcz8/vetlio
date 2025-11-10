@@ -130,7 +130,7 @@ class Dashboard extends Page implements HasSchemas
         ];
     }
 
-    public function beforeConsultationBanner(Schema $schema)
+    public function dashboardContent(Schema $schema)
     {
         return $schema
             ->columns(4)

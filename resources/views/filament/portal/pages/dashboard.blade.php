@@ -1,3 +1,3 @@
 <x-filament-panels::page>
-    {{$this->beforeConsultationBanner}}
+    {{$this->dashboardContent}}
 </x-filament-panels::page>

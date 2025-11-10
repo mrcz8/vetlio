@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Announcement;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 trait HasAnnouncements
@@ -21,12 +22,12 @@ trait HasAnnouncements
 
     public function unreadAnnouncements()
     {
-        return \App\Models\Announcement::query()
+        return Announcement::query()
             ->active()
             ->when(
-                $this instanceof \App\Models\User,
-                fn ($q) => $q->forUsers(),
-                fn ($q) => $q->forClients(),
+                $this instanceof User,
+                fn($q) => $q->forUsers(),
+                fn($q) => $q->forClients(),
             )
             ->where(function ($q) {
                 $q->whereDoesntHave('users', function ($q) {

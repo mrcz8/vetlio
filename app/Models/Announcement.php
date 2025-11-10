@@ -37,23 +37,16 @@ class Announcement extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function readers(): MorphToMany
+    public function users(): MorphToMany
     {
         return $this->morphedByMany(User::class, 'reader', 'announcement_reads')
             ->withPivot('read_at')
             ->withTimestamps();
     }
 
-    public function users(): MorphToMany
-    {
-        return $this->morphedByMany(\App\Models\User::class, 'reader', 'announcement_reads')
-            ->withPivot('read_at')
-            ->withTimestamps();
-    }
-
     public function clients(): MorphToMany
     {
-        return $this->morphedByMany(\App\Models\Client::class, 'reader', 'announcement_reads')
+        return $this->morphedByMany(Client::class, 'reader', 'announcement_reads')
             ->withPivot('read_at')
             ->withTimestamps();
     }
