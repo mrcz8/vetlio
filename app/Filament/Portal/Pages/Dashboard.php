@@ -41,7 +41,7 @@ class Dashboard extends Page implements HasSchemas
             ->modalWidth(Width::ExtraLarge)
             ->color('warning')
             ->extraAttributes([
-                'class' => 'hidden'
+                'style' => 'display:none;'
             ])
             ->label('New announcements')
             ->visible(fn() => auth()->user()->unreadAnnouncements()->exists())
