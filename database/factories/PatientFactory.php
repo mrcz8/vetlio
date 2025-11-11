@@ -39,7 +39,6 @@ class PatientFactory extends Factory
             'organisation_id' => Organisation::factory(),
             'client_id' => Client::factory(),
             'name' => $this->faker->name(),
-            'photo' => $this->faker->imageUrl(400, 400, 'animals', true, 'Vetlio'),
             'color' => $this->faker->safeColorName(),
             'date_of_birth' => $this->faker->optional()->dateTimeBetween('-15 years', 'now'),
             'gender_id' => $isMale ? 1 : 2,

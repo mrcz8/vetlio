@@ -25,7 +25,6 @@ class UserFactory extends Factory
         return [
             'organisation_id' => Organisation::factory(),
             'primary_branch_id' => null,
-            'profile_image' => $this->faker->optional()->imageUrl(200, 200, 'people', true, 'Vetlio'),
             'first_name' => $firstName,
             'last_name' => $lastName,
             'title' => $this->faker->optional()->randomElement(['Dr. Vet. Med.', 'BSc. Vet.', null]),
