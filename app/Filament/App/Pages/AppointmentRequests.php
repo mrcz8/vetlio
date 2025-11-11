@@ -6,6 +6,7 @@ use App\Enums\Icons\PhosphorIcons;
 use App\Filament\Shared\Columns\CreatedAtColumn;
 use App\Models\AppointmentRequest;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
@@ -72,6 +73,24 @@ class AppointmentRequests extends Page implements HasTable
                     ->label('Note'),
 
                 CreatedAtColumn::make(),
+            ])->recordActions([
+                Action::make('approve')
+                    ->label('Approve')
+                    ->requiresConfirmation()
+                    ->visible(function ($record) {
+                        return !$record->approval_at;
+                    })
+                    ->icon(PhosphorIcons::CheckCircle)
+                    ->color('success'),
+
+                Action::make('deny')
+                    ->requiresConfirmation()
+                    ->label('Deny')
+                    ->visible(function ($record) {
+                        return !$record->approval_at;
+                    })
+                    ->icon(PhosphorIcons::XCircleBold)
+                    ->color('danger'),
             ]);
     }
 }
