@@ -175,7 +175,7 @@ VITE_APP_NAME="${APP_NAME}"
 ### 3) Database & storage
 
 ```bash
-php artisan migrate --seed   # seeds demo data if available
+php artisan migrate --seed
 php artisan storage:link
 ```
 
@@ -183,23 +183,24 @@ php artisan storage:link
 
 ```bash
 npm install
-npm run dev
+npm run build
 ```
 
 ### 5) Run app
 
-```bash
-php artisan serve
-# queues & scheduler
-php artisan queue:work
-# Add cron: * * * * * php /path/to/artisan schedule:run >> /dev/null 2>&1
-```
-
+1. Create subdomain org1.vetlio.test in your hosts file.
+2. Navigate to https://org1.vetlio.test/app/login
+3. Login with email `admin@org1.com` and password `password`
 ---
 
-* Add feature tests for tenancy scoping and permissions.
+### 6) Login to admin panel
 
----
+1. Navigate to https://org1.vetlio.test/admin/login
+2. Login with email `admin@admin.com` and password `admin`
+
+### 7) Login to portal
+1. Navigate to https://org1.vetlio.test/portal/login
+2. Find `client email`  from database for email and for password use `portal`
 
 ## Contributing
 

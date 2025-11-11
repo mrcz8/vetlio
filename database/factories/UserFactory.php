@@ -24,13 +24,13 @@ class UserFactory extends Factory
 
         return [
             'organisation_id' => Organisation::factory(),
-            'primary_branch_id' => null, // popunjava se u seederu
+            'primary_branch_id' => null,
             'profile_image' => $this->faker->optional()->imageUrl(200, 200, 'people', true, 'Vetlio'),
             'first_name' => $firstName,
             'last_name' => $lastName,
             'title' => $this->faker->optional()->randomElement(['Dr. Vet. Med.', 'BSc. Vet.', null]),
             'code' => strtoupper(Str::random(4)),
-            'gender_id' => $isMale ? 1 : 2, // ✅ int vrijednost
+            'gender_id' => $isMale ? 1 : 2,
             'date_of_birth' => $this->faker->optional()->dateTimeBetween('-50 years', '-22 years'),
             'name' => $fullName,
             'email' => strtolower(Str::slug($fullName)) . '@' . $this->faker->safeEmailDomain(),
@@ -91,7 +91,7 @@ class UserFactory extends Factory
             'first_name' => 'Demo',
             'last_name' => 'Demo',
             'name' => 'demo',
-            'email' => 'demo@vetlio.app',
+            'email' => 'admin@vetlio.app',
             'administrator' => true,
             'service_provider' => true,
             'active' => true,
