@@ -28,15 +28,14 @@ class ClientFactory extends Factory
             'last_name' => $lastName,
             'phone' => $this->faker->optional()->phoneNumber(),
             'email' => $this->faker->optional()->safeEmail(),
-            'password' => Hash::make('password'), // default password for demo
+            'password' => 'password',
             'address' => $this->faker->optional()->streetAddress(),
             'city' => $this->faker->city(),
             'active' => true,
             'zip_code' => $this->faker->postcode(),
             'country_id' => 1,
-            'gender_id' => $isMale ? 1 : 2, // 1 = male, 2 = female
+            'gender_id' => $isMale ? 1 : 2,
             'date_of_birth' => $this->faker->optional()->dateTimeBetween('-70 years', '-18 years'),
-            'avatar_url' => $this->faker->optional()->imageUrl(300, 300, 'people', true, 'Vetlio'),
             'language' => $this->faker->randomElement(['hr', 'en', 'de', 'it']),
             'how_did_you_hear' => $this->faker->optional()->numberBetween(1, 5),
             'oib' => $this->faker->optional()->numerify('###########'),

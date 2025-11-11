@@ -27,7 +27,7 @@ class ServiceGroupFactory extends Factory
                 'Dental Care',
                 'Emergency Services',
             ]),
-            'color' => $this->faker->optional()->safeHexColor(),
+            'color' => $this->faker->safeHexColor(),
         ];
     }
 

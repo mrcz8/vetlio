@@ -2,17 +2,17 @@
 
 namespace Database\Seeders;
 
-use App\Models\Organisation;
 use App\Models\Branch;
-use App\Models\Room;
-use App\Models\User;
-use App\Models\PriceList;
-use App\Models\ServiceGroup;
-use App\Models\Service;
-use App\Models\Price;
 use App\Models\Client;
+use App\Models\Organisation;
 use App\Models\Patient;
+use App\Models\Price;
+use App\Models\PriceList;
 use App\Models\Reservation;
+use App\Models\Room;
+use App\Models\Service;
+use App\Models\ServiceGroup;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -21,18 +21,18 @@ class DemoOrganisationSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function () {
-            // 1️⃣ Kreiraj organizaciju
+            //Create organisation
             $organisation = Organisation::factory()
                 ->demo()
                 ->create();
 
-            // 2️⃣ Kreiraj poslovnice (1–3)
+            //Create branches
             $branches = Branch::factory()
                 ->count(rand(1, 3))
                 ->for($organisation)
                 ->create();
 
-            // 3️⃣ Kreiraj sobe (3 po poslovnici)
+            // Create rooms for each branch
             $branches->each(function (Branch $branch) use ($organisation) {
                 Room::factory()
                     ->count(3)
@@ -41,56 +41,53 @@ class DemoOrganisationSeeder extends Seeder
                     ->create();
             });
 
-            // 4️⃣ Kreiraj korisnike (1 admin + 4 random)
+            // Create users
             $adminBranch = $branches->random();
 
             $admin = User::factory()
                 ->for($organisation)
                 ->admin()
                 ->create([
-                    'email' => 'admin@vetlio.app',
-                    'first_name' => 'Luka',
-                    'last_name' => 'Cavić',
-                    'name' => 'Luka Cavić',
-                    'primary_branch_id' => $adminBranch->id, // ✅ dodano
+                    'email' => 'admin@org1.com',
+                    'first_name' => 'Admin',
+                    'last_name' => 'Admin',
+                    'name' => 'admin',
+                    'primary_branch_id' => $adminBranch->id,
                 ]);
 
             $users = User::factory()
                 ->count(4)
                 ->for($organisation)
-                ->make() // koristi make da možemo naknadno dodati primary_branch_id
+                ->make()
                 ->each(function ($user) use ($branches, $organisation) {
                     $branch = $branches->random();
                     $user->primary_branch_id = $branch->id;
                     $user->organisation_id = $organisation->id;
                     $user->save();
 
-                    // ako postoji pivot veza branches()
                     if (method_exists($user, 'branches')) {
                         $assigned = $branches->random(rand(1, $branches->count()));
                         $user->branches()->attach($assigned->pluck('id'));
                     }
                 });
 
-            // poveži svakog korisnika s random poslovnicama i postavi primarnu
             $users->each(function (User $user) use ($branches) {
                 $assignedBranches = $branches->random(rand(1, $branches->count()));
                 $user->update([
                     'primary_branch_id' => $assignedBranches->first()->id,
                 ]);
-                // ako ima pivot tablicu za više lokacija
                 if (method_exists($user, 'branches')) {
                     $user->branches()->attach($assignedBranches->pluck('id'));
                 }
             });
 
-            // 5️⃣ Kreiraj cjenike
+            // Create price lists
             $priceLists = PriceList::factory()
                 ->count(3)
                 ->for($organisation)
                 ->create();
 
-            // Poveži cjenike s poslovnicama (svaka ima primarni)
+            //Link with branches
             $branches->each(function (Branch $branch) use ($priceLists) {
                 $linked = $priceLists->random(rand(1, 2));
                 $branch->update(['price_list_id' => $linked->first()->id]);
@@ -100,7 +97,7 @@ class DemoOrganisationSeeder extends Seeder
                 }
             });
 
-            // 6️⃣ Kreiraj grupe usluga i usluge
+
             $groups = ServiceGroup::factory()
                 ->count(5)
                 ->for($organisation)
@@ -117,9 +114,7 @@ class DemoOrganisationSeeder extends Seeder
                 $services = $services->merge($created);
             });
 
-            // 7️⃣ Kreiraj cijene za svaku uslugu — svaka usluga MORA imati barem jednu cijenu
             $services->each(function (Service $service) use ($priceLists, $organisation) {
-                // svaka usluga ima barem jednu cijenu u random cjeniku
                 $primaryList = $priceLists->random();
 
                 Price::factory()
@@ -128,7 +123,6 @@ class DemoOrganisationSeeder extends Seeder
                     ->for($service, 'priceable')
                     ->create();
 
-                // 30% šanse da dobije dodatnu cijenu u drugom cjeniku
                 if (rand(1, 100) <= 30 && $priceLists->count() > 1) {
                     $secondaryList = $priceLists->where('id', '!=', $primaryList->id)->random();
                     Price::factory()
@@ -139,13 +133,11 @@ class DemoOrganisationSeeder extends Seeder
                 }
             });
 
-            // 8️⃣ Kreiraj klijente
             $clients = Client::factory()
                 ->count(20)
                 ->for($organisation)
                 ->create();
 
-            // 9️⃣ Kreiraj pacijente (1–3 po klijentu)
             $patients = collect();
             $clients->each(function (Client $client) use ($organisation, &$patients) {
                 $created = Patient::factory()
@@ -156,12 +148,11 @@ class DemoOrganisationSeeder extends Seeder
                 $patients = $patients->merge($created);
             });
 
-            // 🔟 Kreiraj rezervacije (15–30)
             $allRooms = Room::whereIn('branch_id', $branches->pluck('id'))->get();
             $vets = $users->where('service_provider', true);
 
             Reservation::factory()
-                ->count(rand(15, 30))
+                ->count(rand(15, 80))
                 ->for($organisation)
                 ->state(function () use ($clients, $patients, $branches, $allRooms, $vets, $services) {
                     $branch = $branches->random();
@@ -181,8 +172,6 @@ class DemoOrganisationSeeder extends Seeder
                     ];
                 })
                 ->create();
-
-            $this->command->info("✅ Demo organisation '{$organisation->name}' seeded successfully!");
         });
     }
 }
