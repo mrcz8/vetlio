@@ -42,27 +42,32 @@ class AppointmentRequests extends Page implements HasTable
             ->query(AppointmentRequest::query()->where('branch_id', Filament::getTenant()->id))
             ->columns([
                 TextColumn::make('client.full_name')
+                    ->sortable()
                     ->description(function ($record) {
                         return $record->client->email;
                     })
                     ->label('Client'),
 
                 TextColumn::make('patient.name')
+                    ->sortable()
                     ->description(function ($record) {
                         return $record->patient->description;
                     })
                     ->label('Patient'),
 
                 TextColumn::make('service.name')
+                    ->sortable()
                     ->description(function ($record) {
                         return $record->reason_for_coming;
                     })
                     ->label('Service'),
 
                 TextColumn::make('service_provider.full_name')
+                    ->sortable()
                     ->label('Service Provider'),
 
                 TextColumn::make('date')
+                    ->sortable()
                     ->date()
                     ->description(function ($record) {
                         return $record->from->format('H:i') . ' - ' . $record->to->format('H:i');
@@ -70,6 +75,7 @@ class AppointmentRequests extends Page implements HasTable
                     ->label('Date'),
 
                 TextColumn::make('approval_status_id')
+                    ->sortable()
                     ->badge()
                     ->description(function ($record) {
                         return $record?->approvalBy ? "Approval by {$record->approvalBy->full_name}" : null;
@@ -77,10 +83,14 @@ class AppointmentRequests extends Page implements HasTable
                     ->label('Status'),
 
                 TextColumn::make('note')
+                    ->searchable()
                     ->label('Note'),
 
                 CreatedAtColumn::make(),
             ])
+            ->emptyStateHeading('No appointment requests found')
+            ->emptyStateDescription('There are no appointment requests at the moment.')
+            ->emptyStateActions([])
             ->filters([
                 SelectFilter::make('approval_status_id')
                     ->label('Status')
