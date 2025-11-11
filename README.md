@@ -11,6 +11,11 @@ A modern, multi-tenant CRM for veterinary practices — scheduling clients & pat
 
 <p align="center">
   <!-- SCREENSHOT PLACEHOLDERS -->
+  <img src="docs/screenshots/login.png" alt="Screenshot placeholder 1" width="720" />
+</p>
+
+<p align="center">
+  <!-- SCREENSHOT PLACEHOLDERS -->
   <img src="docs/screenshots/waiting-room.png" alt="Screenshot placeholder 1" width="720" />
 </p>
 
