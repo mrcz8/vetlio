@@ -150,6 +150,7 @@ class ConfirmAppointmentArrival extends Page implements HasSchemas
                     Action::make('confirm')
                         ->color('success')
                         ->requiresConfirmation()
+                        ->successNotificationTitle('You have confirmed the appointment')
                         ->action(function ($record) {
                             $record->update([
                                 'confirmed_status_id' => 1,
@@ -162,6 +163,7 @@ class ConfirmAppointmentArrival extends Page implements HasSchemas
                         ->icon(PhosphorIcons::CheckCircleBold),
 
                     Action::make('reject')
+                        ->successNotificationTitle('You have rejected the appointment')
                         ->requiresConfirmation()
                         ->action(function ($record) {
                             $record->update([
