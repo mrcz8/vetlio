@@ -6,15 +6,11 @@ use App\Enums\Icons\PhosphorIcons;
 use App\Filament\App\Entries\PlaceholderEntry;
 use App\Models\Reservation;
 use Filament\Actions\Action;
-use Filament\Forms\Components\ToggleButtons;
+use Filament\Actions\ActionGroup;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Schemas\Components\Actions;
-use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
@@ -41,16 +37,18 @@ class ConfirmAppointmentArrival extends Page implements HasSchemas
 
     protected Width|string|null $maxContentWidth = Width::ThreeExtraLarge;
 
+    protected array $extraBodyAttributes = [
+        'class' => 'bg-white'
+    ];
+
     public function getTitle(): string|Htmlable
     {
-        return $this->appointment->organisation->name . ' - Confirm Appointment Arrival';
+        return $this?->appointment?->organisation->name . ' - Confirm Appointment Arrival';
     }
 
     public function mount(): void
     {
         $this->appointment = $this->resolveRecord();
-
-        $this->form->fill($this->appointment?->attributesToArray());
     }
 
     public function appointmentInformation(Schema $schema): Schema
@@ -86,26 +84,8 @@ class ConfirmAppointmentArrival extends Page implements HasSchemas
 
                         PlaceholderEntry::make('divider')
                             ->extraAttributes([
-                                'class' => 'm-8 border-gray-200'
+                                'class' => 'mt-8 mb-3 border-gray-200'
                             ]),
-
-                        ToggleButtons::make('status')
-                            ->boolean('Arriving', 'Not ariving')
-                            ->label('Manage your arrival')
-                            ->grouped()
-                            ->extraAttributes([
-                                'style' => 'width: 100%',
-                            ])
-                            ->icons([
-                                true => PhosphorIcons::CheckCircleBold,
-                                false => PhosphorIcons::XCircleBold,
-                            ])
-                            ->colors([
-                                true => 'success',
-                                false => 'danger',
-                            ]),
-
-
                     ]),
 
                 Grid::make(2)
@@ -138,44 +118,42 @@ class ConfirmAppointmentArrival extends Page implements HasSchemas
                             ->size(TextSize::Large)
                             ->label('Vet')
                             ->icon(PhosphorIcons::User)
-                    ])
-
-
-            ]);
-    }
-
-    public function form(Schema $schema): Schema
-    {
-        return $schema
-            ->components([
-                Form::make([
-
-                ])->livewireSubmitHandler('save')
-                    ->footer([
-                        Actions::make([
-                            Action::make('save')
-                                ->submit('save')
-                                ->keyBindings(['mod+s']),
-                        ]),
                     ]),
-            ])
-            ->record($this->appointment)
-            ->statePath('data');
-    }
 
-    public function save(): void
-    {
-        $data = $this->form->getState();
+                PlaceholderEntry::make('divider2')
+                    ->extraAttributes([
+                        'class' => 'mt-3 mb-3 border-gray-200'
+                    ]),
 
-        $record = $this->appointment;
+                ActionGroup::make([
+                    Action::make('confirm')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->action(function ($record) {
+                            $record->update([
+                                'confirmed_status_id' => 1,
+                                'confirmed_at' => now()
+                            ]);
 
-        $record->fill($data);
-        $record->save();
+                        })
+                        ->record($this->appointment)
+                        ->label('I confirm arrival')
+                        ->icon(PhosphorIcons::CheckCircleBold),
 
-        Notification::make()
-            ->success()
-            ->title('Saved')
-            ->send();
+                    Action::make('reject')
+                        ->requiresConfirmation()
+                        ->action(function ($record) {
+                            $record->update([
+                                'confirmed_status_id' => 2,
+                                'confirmed_at' => now()
+                            ]);
+                        })
+                        ->record($this->appointment)
+                        ->color('danger')
+                        ->label('I reject arrival')
+                        ->icon(PhosphorIcons::CheckCircleBold)
+                ])->buttonGroup(),
+            ]);
     }
 
     public function resolveRecord(): ?Reservation
