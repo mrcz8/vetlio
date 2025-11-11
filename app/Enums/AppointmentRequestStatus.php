@@ -27,7 +27,7 @@ enum AppointmentRequestStatus: int implements HasLabel, HasColor, HasIcon
         return match ($this) {
             self::Pending => 'warning',
             self::Approved => 'success',
-            self::Denied => 'daner',
+            self::Denied => 'danger',
         };
     }
 
