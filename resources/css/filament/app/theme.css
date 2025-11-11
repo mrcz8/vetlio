@@ -3,6 +3,7 @@
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/views/filament/app/**/*';
 
 @source '../../../../vendor/codewithdennis/filament-simple-alert/resources/**/*.blade.php';
 @source inline('animate-{spin,pulse,bounce}');
@@ -12,6 +13,7 @@
 @source '../../../../vendor/awcodes/filament-quick-create/resources/**/*.blade.php';
 @source '../../../../vendor/guava/filament-modal-relation-managers/resources/**/*';
 @source '../../../../vendor/devonab/filament-easy-footer/resources/views/**/*';
+@source '../../../../vendor/diogogpinto/filament-auth-ui-enhancer/resources/**/*.blade.php';
 
 /* Task Form */
 .morph-related-select  {
@@ -30,4 +32,11 @@
 
 .fi-modal-close-overlay{
     @apply backdrop-blur-sm;
+}
+
+/*
+Custom auth
+ */
+.custom-auth-empty-panel {
+    @apply px-0;
 }

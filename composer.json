@@ -17,6 +17,7 @@
         "codeat3/blade-phosphor-icons": "^2.3",
         "codewithdennis/filament-simple-alert": "4.x",
         "devonab/filament-easy-footer": "^2.0",
+        "diogogpinto/filament-auth-ui-enhancer": "^2.0",
         "dutchcodingcompany/filament-developer-logins": "^2.0",
         "filament/filament": "^4.0",
         "filament/spatie-laravel-media-library-plugin": "^4.0",

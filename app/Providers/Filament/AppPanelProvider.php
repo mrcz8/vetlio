@@ -15,6 +15,7 @@ use App\Http\Middleware\OrganisationApplySettings;
 use App\Models\Branch;
 use Awcodes\QuickCreate\QuickCreatePlugin;
 use Devonab\FilamentEasyFooter\EasyFooterPlugin;
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 use DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin;
 use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
@@ -23,6 +24,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\AccountWidget;
@@ -47,6 +49,7 @@ class AppPanelProvider extends PanelProvider
             ->spa()
             ->domain(request()->server('HTTP_HOST'))
             ->login()
+            ->passwordReset()
             ->colors([
                 'primary' => [
                     50 => '#e5eff9',
@@ -105,6 +108,9 @@ class AppPanelProvider extends PanelProvider
                 OrganisationApplySettings::class,
             ])
             ->plugins([
+                AuthUIEnhancerPlugin::make()
+                    ->emptyPanelBackgroundColor(Color::Blue, '50')
+                ->emptyPanelView('filament.app.auth.custom-login-view'),
                 EasyFooterPlugin::make()
                     ->withGithub(showLogo: true, showUrl: true)
                     ->withLoadTime(),
