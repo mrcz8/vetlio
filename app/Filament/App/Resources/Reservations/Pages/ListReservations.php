@@ -7,6 +7,7 @@ use App\Enums\ReservationStatus;
 use App\Filament\App\Pages\AppointmentRequests;
 use App\Filament\App\Resources\MedicalDocuments\MedicalDocumentResource;
 use App\Filament\App\Resources\Reservations\ReservationResource;
+use App\Services\ReservationService;
 use CodeWithDennis\SimpleAlert\Components\SimpleAlert;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -78,7 +79,6 @@ class ListReservations extends ListRecords
                     ->getStateUsing(function () {
                         return $this->appointmentRequests;
                     })
-
                     ->visible(fn() => $this->appointmentRequests)
                     ->schema([
                         Section::make(function ($record) {
@@ -95,10 +95,7 @@ class ListReservations extends ListRecords
                                     ->icon(PhosphorIcons::CheckCircleBold)
                                     ->successNotificationTitle('The appointment request has been approved')
                                     ->action(function ($record, $component, Component $livewire, $get) {
-                                        $record->update([
-                                            'approval_status_id' => 2,
-                                            'approval_at' => now(),
-                                        ]);
+                                        app(ReservationService::class)->approveRequest($record);
                                         $livewire->appointmentRequests = $livewire->appointmentRequests->reject(fn($r) => $r->id === $record->id);
                                     }),
                                 Action::make('deny')
@@ -108,10 +105,7 @@ class ListReservations extends ListRecords
                                     ->icon(PhosphorIcons::XCircleBold)
                                     ->successNotificationTitle('The appointment request has been denied')
                                     ->action(function ($record, $livewire) {
-                                        $record->update([
-                                            'approval_status_id' => 3,
-                                            'approval_at' => now(),
-                                        ]);
+                                        app(ReservationService::class)->denyRequest($record);
 
                                         $livewire->appointmentRequests = $livewire->appointmentRequests->reject(fn($r) => $r->id === $record->id);
                                     })

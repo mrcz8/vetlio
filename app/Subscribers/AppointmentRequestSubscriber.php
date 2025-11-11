@@ -4,6 +4,7 @@ namespace App\Subscribers;
 
 use App\Events\AppointmentRequestApproved;
 use App\Events\AppointmentRequestDenied;
+use App\Notifications\AppointmentRequestDeniedNotification;
 use Illuminate\Events\Dispatcher;
 
 class AppointmentRequestSubscriber
@@ -18,11 +19,14 @@ class AppointmentRequestSubscriber
 
     public function handleRequestApproved(AppointmentRequestApproved $event): void
     {
-        dd("handle event approved..");
+        //Handle event approved...
     }
 
     public function handleRequestDenied(AppointmentRequestDenied $event): void
     {
-        dd("handle event denied..");
+        $client = $event->appointmentRequest->client;
+
+        //Notify client request is denied
+        $client->notify(new AppointmentRequestDeniedNotification($event->appointmentRequest));
     }
 }

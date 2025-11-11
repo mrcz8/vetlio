@@ -29,7 +29,7 @@ class ReservationService
         }
     }
 
-    public function approveRequest(AppointmentRequest $appointmentRequest, $note): void
+    public function approveRequest(AppointmentRequest $appointmentRequest, ?string $note = null): void
     {
         $appointmentRequest->update([
             'approval_status_id' => AppointmentRequestStatus::Approved->value,
@@ -43,7 +43,7 @@ class ReservationService
         event(new AppointmentRequestApproved($appointmentRequest));
     }
 
-    public function denyRequest(AppointmentRequest $appointmentRequest, $note): void
+    public function denyRequest(AppointmentRequest $appointmentRequest, ?string $note = null): void
     {
         $appointmentRequest->update([
             'approval_status_id' => AppointmentRequestStatus::Denied->value,
