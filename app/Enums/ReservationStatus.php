@@ -20,4 +20,32 @@ enum ReservationStatus: int implements HasLabel
             self::Completed => __('enums.reservation_status.completed'),
         };
     }
+
+    public function isOrdered(): bool
+    {
+        return $this == self::Ordered;
+    }
+
+    public function isWaitingRoom(): bool
+    {
+        return $this == self::WaitingRoom;
+    }
+
+    public function isInProcess(): bool
+    {
+        return $this == self::InProcess;
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this == self::Completed;
+    }
+
+    public function canMoveBack() : bool {
+        return $this->value > self::Ordered->value;
+    }
+
+    public function canMoveRight() : bool {
+        return $this->value < self::Completed->value;
+    }
 }

@@ -122,10 +122,10 @@ class Reservation extends Model implements Eventable
     {
         $currentStatus = $this->status_id;
 
-        if ($currentStatus == ReservationStatus::Completed->value) return false;
+        if ($currentStatus->isCompleted()) return false;
 
         $this->update([
-            'status_id' => $currentStatus + 1
+            'status_id' => $currentStatus->value + 1
         ]);
 
         $this->updateReservationTimesOnIncrement();
@@ -135,15 +135,15 @@ class Reservation extends Model implements Eventable
 
     private function updateReservationTimesOnIncrement(): void
     {
-        if ($this->status_id == ReservationStatus::WaitingRoom->value) {
+        if ($this->status_id->isWaitingRoom()) {
             $this->update([
                 'waiting_room_at' => now(),
             ]);
-        } else if ($this->status_id == ReservationStatus::InProcess->value) {
+        } else if ($this->status_id->isInProcess()) {
             $this->update([
                 'in_process_at' => now(),
             ]);
-        } else if ($this->status_id == ReservationStatus::Completed->value) {
+        } else if ($this->status_id->isCompleted()) {
             $this->update([
                 'completed_at' => now(),
             ]);
@@ -154,10 +154,10 @@ class Reservation extends Model implements Eventable
     {
         $currentStatus = $this->status_id;
 
-        if ($currentStatus == ReservationStatus::Ordered->value) return false;
+        if ($currentStatus->isOrdered()) return false;
 
         $this->update([
-            'status_id' => $currentStatus - 1
+            'status_id' => $currentStatus->value - 1
         ]);
 
         $this->updateReservationTimesOnDecrement();
@@ -167,24 +167,24 @@ class Reservation extends Model implements Eventable
 
     private function updateReservationTimesOnDecrement(): void
     {
-        if ($this->status_id == ReservationStatus::Ordered->value) {
+        if ($this->status_id->isOrdered()) {
             $this->update([
                 'completed_at' => null,
                 'waiting_room_at' => null,
                 'in_process_at' => null,
             ]);
-        } else if ($this->status_id == ReservationStatus::WaitingRoom->value) {
+        } else if ($this->status_id->isWaitingRoom()) {
             $this->update([
                 'waiting_room_at' => now(),
                 'in_process_at' => null,
                 'completed_at' => null,
             ]);
-        } else if ($this->status_id == ReservationStatus::InProcess->value) {
+        } else if ($this->status_id->isInProcess()) {
             $this->update([
                 'in_process_at' => now(),
                 'completed_at' => null,
             ]);
-        } else if ($this->status_id == ReservationStatus::Completed->value) {
+        } else if ($this->status_id->isCompleted()) {
             $this->update([
                 'completed_at' => now(),
             ]);

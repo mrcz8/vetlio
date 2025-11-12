@@ -129,15 +129,17 @@ class ReservationsTable
     {
         return [
             MoveBack::make('back')
-                ->visible(fn($record) => $record->status_id > ReservationStatus::Ordered->value),
+                ->visible(function($record) {
+                    return $record->status_id->canMoveBack();
+                }),
 
             MoveRight::make('right')
-                ->visible(fn($record) => $record->status_id < ReservationStatus::Completed->value),
+                ->visible(fn($record) => $record->status_id->canMoveRight()),
 
             Action::make('create-medical-document')
                 ->label('Create Medical Record')
                 ->icon(PhosphorIcons::FilePlus)
-                ->visible(fn($record) => $record->status_id == ReservationStatus::InProcess->value)
+                ->visible(fn($record) => $record->status_id->isInProcess())
                 ->url(fn($record) => MedicalDocumentResource::getUrl('create', ['reservationId' => $record->uuid])),
 
             ViewAction::make(),
