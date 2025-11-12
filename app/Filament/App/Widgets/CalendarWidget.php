@@ -243,6 +243,8 @@ class CalendarWidget extends BaseCalendarWidget
             CancelReservationAction::make()
                 ->record(function ($livewire) {
                     return $livewire->getEventRecord();
+                })->after(function () {
+                    $this->refreshRecords();
                 })
         ];
     }

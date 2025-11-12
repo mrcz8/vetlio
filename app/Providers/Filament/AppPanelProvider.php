@@ -27,8 +27,6 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -106,7 +104,7 @@ class AppPanelProvider extends PanelProvider
             ->plugins([
                 AuthUIEnhancerPlugin::make()
                     ->emptyPanelBackgroundColor(Color::Blue, '50')
-                ->emptyPanelView('filament.app.auth.custom-login-view'),
+                    ->emptyPanelView('filament.app.auth.custom-login-view'),
                 EasyFooterPlugin::make()
                     ->withGithub(showLogo: true, showUrl: true)
                     ->withLoadTime(),
