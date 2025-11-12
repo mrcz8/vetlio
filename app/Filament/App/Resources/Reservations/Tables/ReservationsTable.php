@@ -3,7 +3,6 @@
 namespace App\Filament\App\Resources\Reservations\Tables;
 
 use App\Enums\Icons\PhosphorIcons;
-use App\Enums\ReservationStatus;
 use App\Filament\App\Actions\CancelReservationAction;
 use App\Filament\App\Actions\ClientCardAction;
 use App\Filament\App\Resources\MedicalDocuments\MedicalDocumentResource;
@@ -59,6 +58,14 @@ class ReservationsTable
                     ->description(fn($record) => $record->from->format('H:i') . ' - ' . $record->to->format('H:i'))
                     ->label('Reservation Time'),
 
+                TextColumn::make('waiting_room_at')
+                    ->label('Waiting time')
+                    ->badge()
+                    ->formatStateUsing(function ($state) {
+                        if (!$state) return null;
+
+                        return intval($state->diffInMinutes(now(), true)) . ' min';
+                    }),
                 TextColumn::make('service.name')
                     ->searchable()
                     ->sortable()
@@ -129,12 +136,12 @@ class ReservationsTable
     {
         return [
             MoveBack::make('back')
-                ->visible(function($record) {
-                    return $record->status_id->canMoveBack();
+                ->visible(function ($record) {
+                    return $record->status_id->canMoveBack() && !$record->is_canceled;
                 }),
 
             MoveRight::make('right')
-                ->visible(fn($record) => $record->status_id->canMoveRight()),
+                ->visible(fn($record) => $record->status_id->canMoveRight() && !$record->is_canceled),
 
             Action::make('create-medical-document')
                 ->label('Create Medical Record')
@@ -146,7 +153,8 @@ class ReservationsTable
 
             ActionGroup::make([
                 ClientCardAction::make(),
-                EditAction::make(),
+                EditAction::make()
+                    ->visible(fn($record) => !$record->canceled_at),
                 DeleteAction::make(),
                 CancelReservationAction::make(),
             ]),

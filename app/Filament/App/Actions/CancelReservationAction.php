@@ -25,7 +25,7 @@ class CancelReservationAction extends Action
         $this->modalIcon(PhosphorIcons::CalendarX);
         $this->modalHeading('Cancel reservation');
         $this->visible(function ($record) {
-            return !$record->canceled_at;
+            return !$record->is_canceled && $record->status_id->isOrdered();
         });
         $this->successNotificationTitle('Reservation canceled successfully');
         $this->failureNotificationTitle('Error canceling reservation');
@@ -37,12 +37,15 @@ class CancelReservationAction extends Action
                 ->rows(4),
 
             Toggle::make('send_email')
+                ->visible(function () {
+                    return !auth()->guard('portal')->check();
+                })
                 ->hint('Send email to client about cancellation')
                 ->label('Send email')
 
         ]);
         $this->action(function (array $data, $record) {
-            app(ReservationService::class)->cancel($record, $data['reason'], $data['send_email']);
+            app(ReservationService::class)->cancel($record, $data['reason'], $data['send_email'] ?? false);
         });
     }
 

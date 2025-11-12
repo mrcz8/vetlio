@@ -11,6 +11,7 @@ use Guava\Calendar\ValueObjects\CalendarEvent;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -55,6 +56,7 @@ class Reservation extends Model implements Eventable
         'to' => 'datetime',
         'canceled_at' => 'datetime',
         'confirmed_at' => 'datetime',
+        'waiting_room_at' => 'datetime',
     ];
 
     #[Scope]
@@ -81,6 +83,13 @@ class Reservation extends Model implements Eventable
     public function ordered(Builder $query): void
     {
         $query->where('status_id', ReservationStatus::Ordered->value);
+    }
+
+    public function isCanceled(): Attribute
+    {
+        return Attribute::make(function () {
+            return $this->canceled_at != null;
+        });
     }
 
     public function branch(): BelongsTo

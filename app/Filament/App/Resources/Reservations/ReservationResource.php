@@ -24,7 +24,7 @@ class ReservationResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'from';
 
-    protected static ?string $navigationLabel = 'Reservations';
+    protected static ?string $navigationLabel = 'Waiting Room';
 
     protected static ?string $label = 'reservation';
 

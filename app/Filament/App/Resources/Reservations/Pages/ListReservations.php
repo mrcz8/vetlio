@@ -30,6 +30,10 @@ class ListReservations extends ListRecords
 
     public ?Collection $appointmentRequests = null;
 
+    public  function getTitle(): string|\Illuminate\Contracts\Support\Htmlable
+    {
+     return 'Waiting room';
+    }
     public function mount(): void
     {
         parent::mount();
@@ -37,9 +41,6 @@ class ListReservations extends ListRecords
         $this->appointmentRequests = Filament::getTenant()->appointmentRequests()->where('approval_at', null)->get();
     }
 
-    /**
-     * @return Action
-     */
     public function appointmentRequestsAction(): Action
     {
         return Action::make('appointment-requests')
@@ -175,6 +176,10 @@ class ListReservations extends ListRecords
             ->groupBy('status_id')
             ->pluck('total', 'status_id');
 
+        $canceledCount = (clone $baseQuery)
+            ->whereNotNull('canceled_at')
+            ->count();
+
         $tabs = [];
 
         foreach (ReservationStatus::cases() as $status) {
@@ -190,6 +195,19 @@ class ListReservations extends ListRecords
                 });
         }
 
+        $tabs['canceled'] = Tab::make('Canceled')
+            ->badge($canceledCount)
+            ->badgeColor('danger')
+            ->modifyQueryUsing(function (Builder $query) use ($room, $serviceProvider, $from, $to) {
+                return $query
+                    ->whereNotNull('canceled_at')
+                    ->when($from, fn($q) => $q->whereDate('date', '>=', $from))
+                    ->when($to, fn($q) => $q->whereDate('date', '<=', $to))
+                    ->when($room, fn($q) => $q->where('room_id', $room))
+                    ->when($serviceProvider, fn($q) => $q->where('service_provider_id', $serviceProvider));
+            });
+
         return $tabs;
     }
+
 }
