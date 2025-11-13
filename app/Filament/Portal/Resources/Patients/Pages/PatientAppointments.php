@@ -26,6 +26,8 @@ class PatientAppointments extends ManageRelatedRecords
         return 'Appointments of ' . $this->getRecord()->name;
     }
 
+    protected static ?string $breadcrumb = 'Appointments';
+
     public function getSubheading(): string|Htmlable|null
     {
         return $this->getRecord()->description;
