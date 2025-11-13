@@ -10,6 +10,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
+use Livewire\Livewire;
 
 class PatientAppointments extends ManageRelatedRecords
 {
@@ -31,6 +32,13 @@ class PatientAppointments extends ManageRelatedRecords
     public function getSubheading(): string|Htmlable|null
     {
         return $this->getRecord()->description;
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $record = Livewire::current()->getRecord();
+
+        return $record->reservations_count;
     }
 
     public function table(Table $table): Table

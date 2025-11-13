@@ -16,6 +16,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
+use Livewire\Livewire;
 
 class PatientMedicalDocuments extends Page implements HasTable
 {
@@ -32,6 +33,13 @@ class PatientMedicalDocuments extends Page implements HasTable
     public function getSubheading(): string|Htmlable|null
     {
         return $this->getRecord()->description;
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $record = Livewire::current()->getRecord();
+
+        return $record->medical_documents_count;
     }
 
     public function getTitle(): string|Htmlable

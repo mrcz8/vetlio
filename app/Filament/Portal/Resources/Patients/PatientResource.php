@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PatientResource extends Resource
@@ -31,6 +32,11 @@ class PatientResource extends Resource
 
     protected static ?string $breadcrumb = null;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('client_id', auth()->id())->count();
+    }
+
     public static function getRecordSubNavigation(Page $page): array
     {
         return $page->generateNavigationItems([
@@ -38,6 +44,30 @@ class PatientResource extends Resource
             PatientAppointments::class,
             PatientMedicalDocuments::class
         ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'breed.name', 'species.name'];
+    }
+
+    public static function getGlobalSearchResultUrl(Model $record): string
+    {
+        return self::getUrl('view', ['record' => $record]);
+    }
+
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with(['breed', 'species']);
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Species' => $record->species->name,
+            'Breed' => $record->breed->name ?? '-',
+            'Age' => $record->date_of_birth ? $record->date_of_birth->age . ' yrs' : '-',
+        ];
     }
 
     public static function getModelLabel(): string
@@ -67,7 +97,10 @@ class PatientResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['species', 'breed']);
+        return parent::getEloquentQuery()
+            ->where('client_id', auth()->id())
+            ->withCount(['reservations', 'medicalDocuments'])
+            ->with(['species', 'breed']);
     }
 
     public static function getRelations(): array
