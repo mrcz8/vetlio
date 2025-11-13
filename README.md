@@ -5,6 +5,12 @@
 
 # Vetlio
 
+[![Join the discussion](https://img.shields.io/badge/💬%20Join%20the%20Discussion-blue?style=flat-square)](../../discussions)
+[![GitHub issues](https://img.shields.io/github/issues/lukacavic/vetlio?style=flat-square)](../../issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/lukacavic/vetlio?style=flat-square)](../../pulls)
+[![License](https://img.shields.io/github/license/lukacavic/vetlio?style=flat-square)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/lukacavic/vetlio?style=flat-square)](../../stargazers)
+
 A modern, multi-tenant CRM for veterinary practices — scheduling clients & patients, invoicing, medical documents, offers, orders, and more. Built with **Laravel 12** and **Filament 4.1**.
 
 > WARNING: **Alpha Stage** — not production ready. Expect breaking changes and incomplete features.
@@ -201,6 +207,15 @@ npm run build
 ### 7) Login to portal
 1. Navigate to https://org1.vetlio.test/portal/login
 2. Find `client email`  from database for email and for password use `portal`
+
+## Community & Feedback
+
+All updates about new features, improvements, and upcoming changes are shared in the [Announcements](../../discussions/categories/announcements) section.
+
+If you have ideas or suggestions for what you’d like to see next in Vetlio, you can post them in the [Ideas & Feedback](../../discussions/categories/ideas) section.  
+Every idea helps shape the direction of Vetlio and shows where the most interest is coming from.
+
+Vetlio is still in its early stages, and your input is incredibly valuable — feel free to join the discussions, share your thoughts, or comment on ideas from others.
 
 ## Contributing
 
