@@ -38,7 +38,7 @@ class ReservationsTable
                     ->orderByRaw('CASE WHEN canceled_at IS NULL THEN 0 ELSE 1 END ASC')
                     ->orderBy('from', 'asc');
             })
-            ->recordClasses(function($record) {
+            ->recordClasses(function ($record) {
                 return $record->is_canceled ? 'line-through border-l-2 border-b-0 border-red-500' : '';
             })
             ->striped()
@@ -69,6 +69,9 @@ class ReservationsTable
                 TextColumn::make('waiting_room_at')
                     ->label('Waiting time')
                     ->badge()
+                    ->visible(function ($livewire) {
+                        return $livewire && $livewire->activeTab == "2"; //Waiting room tab
+                    })
                     ->formatStateUsing(function ($state) {
                         if (!$state) return null;
 

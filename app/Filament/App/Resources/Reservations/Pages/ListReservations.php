@@ -18,6 +18,7 @@ use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Support\Enums\Width;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ class ListReservations extends ListRecords
 
     public ?Collection $appointmentRequests = null;
 
-    public  function getTitle(): string|\Illuminate\Contracts\Support\Htmlable
+    public  function getTitle(): string|Htmlable
     {
      return 'Waiting room';
     }

@@ -40,7 +40,7 @@ class CancelReservationAction extends Action
         $this->schema([
             Select::make('cancel_reason_id')
                 ->label('Reason for cancellation')
-                ->options(CancelReason::all()->pluck('name', 'id'))
+                ->options(CancelReason::whereActive(true)->get()->pluck('name', 'id'))
                 ->required(),
 
             SimpleAlert::make('no-template')

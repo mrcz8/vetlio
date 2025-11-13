@@ -18,7 +18,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -43,7 +42,7 @@ class CancelReasonResource extends Resource
 
     protected static ?string $pluralLabel = 'cancel reasons';
 
-    protected static string | UnitEnum | null $navigationGroup = 'Services';
+    protected static string|UnitEnum|null $navigationGroup = 'Services';
 
     protected static bool $isScopedToTenant = false;
 
@@ -84,7 +83,10 @@ class CancelReasonResource extends Resource
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->disabled(function ($record) {
+                        return $record->appointments()->exists();
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
