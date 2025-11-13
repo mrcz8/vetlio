@@ -7,7 +7,16 @@
 @source inline('animate-{spin,pulse,bounce}');
 @source '../../../../vendor/awcodes/palette/resources/**/*.blade.php';
 @source '../../../../vendor/devonab/filament-easy-footer/resources/views/**/*';
+@source '../../../../vendor/diogogpinto/filament-auth-ui-enhancer/resources/**/*.blade.php';
 
 .fi-modal-close-overlay{
     @apply backdrop-blur-sm;
 }
+
+/*
+Custom auth
+ */
+.custom-auth-empty-panel {
+    @apply px-0;
+}
+

@@ -6,6 +6,7 @@ use App\Filament\Portal\Pages\Dashboard;
 use App\Http\Middleware\IdentifyTenant;
 use App\Models\Client;
 use Devonab\FilamentEasyFooter\EasyFooterPlugin;
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 use DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -53,6 +54,9 @@ class PortalPanelProvider extends PanelProvider
                 FilamentInfoWidget::class,
             ])
             ->plugins([
+                AuthUIEnhancerPlugin::make()
+                    ->emptyPanelBackgroundColor(Color::Green, '50')
+                    ->emptyPanelView('filament.portal.auth.custom-login-view'),
                 EasyFooterPlugin::make()
                     ->withGithub(showLogo: true, showUrl: true)
                     ->withLoadTime(),
