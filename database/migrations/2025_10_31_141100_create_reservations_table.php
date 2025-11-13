@@ -28,7 +28,7 @@ return new class extends Migration
             $table->integer('room_id');
             $table->integer('service_id');
             $table->timestamp('canceled_at')->nullable();
-            $table->string('cancel_reason')->nullable();
+            $table->unsignedInteger('cancel_reason_id')->nullable();
             $table->timestamp('waiting_room_at')->nullable();
             $table->timestamp('in_process_at')->nullable();
             $table->timestamp('completed_at')->nullable();

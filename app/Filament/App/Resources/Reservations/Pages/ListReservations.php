@@ -165,7 +165,7 @@ class ListReservations extends ListRecords
         $from = $this->getTable()->getFilter('date')?->getState()['from'] ?? null;
         $to = $this->getTable()->getFilter('date')?->getState()['to'] ?? null;
 
-        $baseQuery = $this->getModel()::query()->canceled(false)
+        $baseQuery = $this->getModel()::query()
             ->when($from, fn($q) => $q->whereDate('date', '>=', $from))
             ->when($to, fn($q) => $q->whereDate('date', '<=', $to))
             ->when($room, fn($q) => $q->where('room_id', $room))
@@ -176,10 +176,6 @@ class ListReservations extends ListRecords
             ->groupBy('status_id')
             ->pluck('total', 'status_id');
 
-        $canceledCount = (clone $baseQuery)
-            ->whereNotNull('canceled_at')
-            ->count();
-
         $tabs = [];
 
         foreach (ReservationStatus::cases() as $status) {
@@ -187,7 +183,6 @@ class ListReservations extends ListRecords
                 ->badge($counts[$status->value] ?? 0)
                 ->modifyQueryUsing(function (Builder $query) use ($status, $serviceProvider, $room, $from, $to) {
                     return $query
-                        ->canceled(false)
                         ->where('status_id', $status->value)
                         ->when($from, fn($q) => $q->whereDate('date', '>=', $from))
                         ->when($to, fn($q) => $q->whereDate('date', '<=', $to))
@@ -195,18 +190,6 @@ class ListReservations extends ListRecords
                         ->when($serviceProvider, fn($q) => $q->where('service_provider_id', $serviceProvider));
                 });
         }
-
-        $tabs['canceled'] = Tab::make('Canceled')
-            ->badge($canceledCount)
-            ->badgeColor('danger')
-            ->modifyQueryUsing(function (Builder $query) use ($room, $serviceProvider, $from, $to) {
-                return $query
-                    ->canceled()
-                    ->when($from, fn($q) => $q->whereDate('date', '>=', $from))
-                    ->when($to, fn($q) => $q->whereDate('date', '<=', $to))
-                    ->when($room, fn($q) => $q->where('room_id', $room))
-                    ->when($serviceProvider, fn($q) => $q->where('service_provider_id', $serviceProvider));
-            });
 
         return $tabs;
     }

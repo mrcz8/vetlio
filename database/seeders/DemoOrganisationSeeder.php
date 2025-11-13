@@ -57,6 +57,8 @@ class DemoOrganisationSeeder extends Seeder
                     'primary_branch_id' => $adminBranch->id,
                 ]);
 
+            $admin->branches()->attach($adminBranch->id);
+
             $users = User::factory()
                 ->count(4)
                 ->for($organisation)

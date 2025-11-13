@@ -50,7 +50,6 @@ class ReservationFactory extends Factory
             'to' => $end,
 
             'canceled_at' => null,
-            'cancel_reason' => null,
             'waiting_room_at' => null,
             'in_process_at' => null,
             'completed_at' => null,
@@ -69,7 +68,6 @@ class ReservationFactory extends Factory
             return [
                 'status_id' => 4,
                 'canceled_at' => now(),
-                'cancel_reason' => 'Client called to cancel.',
             ];
         });
     }

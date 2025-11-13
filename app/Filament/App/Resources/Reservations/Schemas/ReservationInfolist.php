@@ -42,7 +42,7 @@ class ReservationInfolist
             ->border()
             ->title('Reservation Canceled')
             ->description(function ($record) {
-                $cancelReason = $record->cancel_reason ?? 'No reason provided';
+                $cancelReason = $record->cancelReason->name ?? 'No reason provided';
 
                 return "Cancellation reason: $cancelReason";
             })

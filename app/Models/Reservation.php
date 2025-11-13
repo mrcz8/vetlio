@@ -40,7 +40,7 @@ class Reservation extends Model implements Eventable
         'service_id',
         'canceled_at',
         'canceled',
-        'cancel_reason',
+        'cancel_reason_id',
         'waiting_room_at',
         'in_process_at',
         'completed_at',
@@ -90,6 +90,11 @@ class Reservation extends Model implements Eventable
         return Attribute::make(function () {
             return $this->canceled_at != null;
         });
+    }
+
+    public function cancelReason(): BelongsTo
+    {
+        return $this->belongsTo(CancelReason::class);
     }
 
     public function branch(): BelongsTo

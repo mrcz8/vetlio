@@ -11,13 +11,13 @@ use App\Notifications\ReservationCanceled;
 
 class ReservationService
 {
-    public function cancel(Reservation $reservation, $cancelReason, $sendEmail = false): void
+    public function cancel(Reservation $reservation, $cancelReasonId, $sendEmail = false): void
     {
         if ($reservation->canceled_at) return;
 
         $reservation->update([
             'canceled_at' => now(),
-            'cancel_reason' => $cancelReason,
+            'cancel_reason_id' => $cancelReasonId,
         ]);
 
         //Alert service provider

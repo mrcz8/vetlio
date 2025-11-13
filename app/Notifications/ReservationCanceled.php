@@ -65,6 +65,8 @@ class ReservationCanceled extends Notification
     {
         if (!$notifiable instanceof User) return [];
 
+        if($this->templateContent === null) return [];
+
         return FilamentNotification::make()
             ->title($this->templateContent['subject'])
             ->icon(PhosphorIcons::CalendarX)

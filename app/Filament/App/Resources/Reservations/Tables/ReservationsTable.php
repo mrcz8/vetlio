@@ -33,6 +33,14 @@ class ReservationsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                return $query
+                    ->orderByRaw('CASE WHEN canceled_at IS NULL THEN 0 ELSE 1 END ASC')
+                    ->orderBy('from', 'asc');
+            })
+            ->recordClasses(function($record) {
+                return $record->is_canceled ? 'line-through border-l-2 border-b-0 border-red-500' : '';
+            })
             ->striped()
             ->columns([
                 BadgeableColumn::make('client.full_name')
@@ -66,6 +74,7 @@ class ReservationsTable
 
                         return intval($state->diffInMinutes(now(), true)) . ' min';
                     }),
+
                 TextColumn::make('service.name')
                     ->searchable()
                     ->sortable()
@@ -144,7 +153,8 @@ class ReservationsTable
                 ->visible(fn($record) => $record->status_id->canMoveRight() && !$record->is_canceled),
 
             Action::make('create-medical-document')
-                ->label('Create Medical Record')
+                ->tooltip('Create Medical Record')
+                ->hiddenLabel()
                 ->icon(PhosphorIcons::FilePlus)
                 ->visible(fn($record) => $record->status_id->isInProcess())
                 ->url(fn($record) => MedicalDocumentResource::getUrl('create', ['reservationId' => $record->uuid])),
