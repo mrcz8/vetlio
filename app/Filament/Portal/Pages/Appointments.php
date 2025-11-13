@@ -4,6 +4,7 @@ namespace App\Filament\Portal\Pages;
 
 use App\Enums\Icons\PhosphorIcons;
 use App\Filament\App\Actions\CancelReservationAction;
+use App\Filament\Portal\Actions\AppointmentRequestAction;
 use App\Models\Reservation;
 use BackedEnum;
 use Filament\Actions\CreateAction;
@@ -35,15 +36,16 @@ class Appointments extends Page implements HasTable
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()
-                ->icon(PhosphorIcons::CalendarPlus)
-                ->label('New appointment'),
+            AppointmentRequestAction::make()
         ];
     }
 
     public function table(Table $table): Table
     {
         return $table
+            ->emptyStateActions([
+                AppointmentRequestAction::make()
+            ])
             ->query(Reservation::query()->where('client_id', auth()->id()))
             ->columns([
                 ImageColumn::make('patient.photo')

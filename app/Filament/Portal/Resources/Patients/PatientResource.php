@@ -53,6 +53,11 @@ class PatientResource extends Resource
         return PatientsTable::configure($table);
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['species', 'breed']);
+    }
+
     public static function getRelations(): array
     {
         return [

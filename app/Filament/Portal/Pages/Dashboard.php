@@ -3,6 +3,7 @@
 namespace App\Filament\Portal\Pages;
 
 use App\Enums\Icons\PhosphorIcons;
+use App\Filament\Portal\Actions\AppointmentRequestAction;
 use App\Filament\Portal\Widgets\ClientStats;
 use App\Models\AppointmentRequest;
 use App\Models\Branch;
@@ -58,165 +59,7 @@ class Dashboard extends Page implements HasSchemas
         return 'Welcome back, ' . auth()->user()->full_name . '.';
     }
 
-    private function calculateAvailableSlots($get): Collection
-    {
-        $date = Carbon::parse($get('date'))->format('Y-m-d');
 
-        $service = Service::with('users')->find($get('service_id'));
-
-        $slots = $service->users->flatMap(function ($user) use ($date, $service) {
-            return collect($user->getAvailableSlots(
-                date: $date,
-                slotDuration: $service->duration->minute
-            ))->map(function ($slot) use ($user) {
-                $slot['user'] = $user->only('id', 'full_name');
-                return $slot;
-            });
-        });
-
-        return collect($slots)
-            ->filter(fn($slot) => $slot['is_available']);
-    }
-
-    /**
-     * @return Action
-     */
-    public function createAppointmentRequestAction(): Action
-    {
-        $branches = Branch::where('organisation_id', auth()->user()->organisation_id)->get();
-        $patients = Patient::where('client_id', auth()->id())->get();
-        $services = Service::all();
-
-        return Action::make('new-appointment')
-            ->requiresConfirmation()
-            ->slideOver()
-            ->modalWidth(Width::FourExtraLarge)
-            ->modalHeading('New appointment request')
-            ->modalDescription('Select date and time for your appointment')
-            ->modalIcon(PhosphorIcons::CalendarPlus)
-            ->steps([
-                Step::make('Select pet')
-                    ->icon(PhosphorIcons::Dog)
-                    ->schema(function () use ($patients, $services, $branches) {
-                        return [
-                            Radio::make('branch_id')
-                                ->label('Select preferred location')
-                                ->options(function () use ($patients, $branches) {
-                                    return $branches->pluck('name', 'id');
-                                })
-                                ->descriptions(function () use ($branches) {
-                                    return $branches
-                                        ->mapWithKeys(fn($branch) => [
-                                            $branch->id => $branch->name
-                                        ])
-                                        ->toArray();
-                                }),
-
-                            Radio::make('patient_id')
-                                ->label('Select your pet')
-                                ->options(function () use ($patients) {
-                                    return $patients->pluck('name', 'id');
-                                })
-                                ->descriptions(function () use ($patients) {
-                                    return $patients
-                                        ->mapWithKeys(fn($patient) => [
-                                            $patient->id => "{$patient->species->name} ({$patient->breed->name})"
-                                        ])
-                                        ->toArray();
-                                }),
-
-                            Flex::make([
-                                TextInput::make('reason_for_comming')
-                                    ->label('Reason for coming'),
-
-                                Select::make('service_id')
-                                    ->live(true)
-                                    ->label('Select service')
-                                    ->options($services->pluck('name', 'id'))
-                                    ->required()
-                            ])
-                        ];
-                    }),
-                Step::make('Select time')
-                    ->icon(Heroicon::Clock)
-                    ->schema([
-                        DatePicker::make('date')
-                            ->label('Select date')
-                            ->native(false)
-                            ->live(true)
-                            ->default(now())
-                            ->required(),
-
-                        Radio::make('time')
-                            ->hiddenLabel()
-                            ->columns(3)
-                            ->disabled(function ($get) {
-                                return !$get('date');
-                            })
-                            ->descriptions(function ($get) {
-                                if (!$get('date') || !$get('service_id')) return [];
-
-                                return $this->calculateAvailableSlots($get)
-                                    ->mapWithKeys(fn($slot) => [$slot['start_time'] => $slot['user']['full_name']])
-                                    ->toArray();
-                            })
-                            ->options(function ($get) {
-                                if (!$get('date') || !$get('service_id')) return [];
-
-                                return $this->calculateAvailableSlots($get)
-                                    ->mapWithKeys(fn($slot) => [$slot['start_time'] => $slot['start_time']])
-                                    ->toArray();
-                            })
-                    ]),
-                Step::make('Additional information')
-                    ->icon(PhosphorIcons::Note)
-                    ->schema([
-                        Textarea::make('note')
-                            ->hint('Enter any additional information about the appointment, such as special instructions or any other details.')
-                            ->label('Note'),
-
-                        FileUpload::make('attachments')
-                            ->label('Attachments')
-                    ]),
-                Step::make('Summary')
-                    ->icon(Heroicon::CheckCircle)
-                    ->schema([
-                        Text::make('Summary of your request')
-                            ->size(TextSize::Large)
-                            ->icon(PhosphorIcons::CheckCircleBold)
-                            ->weight(FontWeight::Bold),
-
-                        TextEntry::make('patient.name')
-                            ->label('Pet')
-                            ->icon(PhosphorIcons::Dog)
-                            ->getStateUsing(function ($get, $action) use ($patients) {
-                                if (!$get('patient_id')) return null;
-
-                                return $patients->find($get('patient_id'))->name;
-                            })
-                    ])
-            ])
-            ->action(function (array $data) {
-                $serviceDuration = Service::find($data['service_id'])->duration->minute;
-
-                $date = Carbon::parse($data['date']);
-                $from = $date->copy()->setTimeFromTimeString($data['time']);
-                $to = $from->copy()->addMinutes($serviceDuration);
-
-                $data['from'] = $from;
-                $data['to'] = $to;
-                $data['client_id'] = auth()->id();
-                $data['service_provider_id'] = 1;
-                $data['approval_status_id'] = 1;
-                $data['organisation_id'] = auth()->user()->organisation_id;
-
-                AppointmentRequest::create($data);
-            })
-            ->successNotificationTitle('Appointment request created successfully')
-            ->icon(PhosphorIcons::CalendarPlus)
-            ->color('success')
-            ->label('New appointment');
-    }
 
     public function announcementsAction(): Action
     {
@@ -297,7 +140,7 @@ class Dashboard extends Page implements HasSchemas
     {
         return [
             $this->announcementsAction(),
-            $this->createAppointmentRequestAction()
+            AppointmentRequestAction::make(),
         ];
     }
 
