@@ -64,6 +64,11 @@ class ReservationResource extends Resource
             'doctors' => DoctorReservations::route('/doctors'),
         ];
     }
+public static function getEloquentQuery(): Builder
+{
+    return parent::getEloquentQuery()
+        ->with(['patient.breed', 'patient.species']);
+}
 
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
