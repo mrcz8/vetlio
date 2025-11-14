@@ -24,19 +24,19 @@ class CancelReservationAction extends Action
         parent::setUp();
 
         $this->hasEmailTemplate = $this->checkEmailTemplateExists();
-        $this->label('Cancel reservation');
+        $this->label('Cancel appointment');
         $this->icon(PhosphorIcons::CalendarX);
         $this->modalWidth(Width::Large);
         $this->color('danger');
         $this->model(Reservation::class);
-        $this->modalSubmitActionLabel('Cancel reservation');
+        $this->modalSubmitActionLabel('Cancel appointment');
         $this->modalIcon(PhosphorIcons::CalendarX);
         $this->modalHeading('Cancel reservation');
         $this->visible(function ($record) {
             return !$record->is_canceled && $record->status_id->isOrdered();
         });
-        $this->successNotificationTitle('Reservation canceled successfully');
-        $this->failureNotificationTitle('Error canceling reservation');
+        $this->successNotificationTitle('Appointment canceled successfully');
+        $this->failureNotificationTitle('Error canceling appointment');
         $this->schema([
             Select::make('cancel_reason_id')
                 ->label('Reason for cancellation')
@@ -73,7 +73,7 @@ class CancelReservationAction extends Action
         return 'cancel-reservation';
     }
 
-    private function checkEmailTemplateExists()
+    private function checkEmailTemplateExists(): bool
     {
         if (auth()->guard('portal')->check()) return false;
 

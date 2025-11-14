@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ObservedBy([ReservationObserver::class])]
@@ -115,6 +116,11 @@ class Reservation extends Model implements Eventable
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
+    }
+
+    public function notes(): MorphMany
+    {
+        return $this->morphMany(Note::class, 'related')->latest();
     }
 
     public function serviceProvider(): BelongsTo

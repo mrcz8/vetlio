@@ -3,9 +3,9 @@
 namespace App\Filament\App\Resources\Reservations\Schemas;
 
 use App\Enums\Icons\PhosphorIcons;
-use App\Models\ReservationReminderDelivery;
+use App\Filament\App\Actions\CancelReservationAction;
 use CodeWithDennis\SimpleAlert\Components\SimpleAlert;
-use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -13,10 +13,11 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Flex;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\TextSize;
 use Illuminate\Support\Number;
-use Illuminate\Support\Str;
 
 class ReservationInfolist
 {
@@ -31,15 +32,16 @@ class ReservationInfolist
             ]);
     }
 
-    /**
-     * @return SimpleAlert
-     */
+
     public static function reservationCanceledAlert(): SimpleAlert
     {
         return SimpleAlert::make('canceled')
             ->danger()
             ->icon(PhosphorIcons::CalendarMinus)
             ->border()
+            ->visible(function ($record) {
+                return $record->is_canceled;
+            })
             ->title('Reservation Canceled')
             ->description(function ($record) {
                 $cancelReason = $record->cancelReason->name ?? 'No reason provided';
@@ -49,47 +51,75 @@ class ReservationInfolist
             ->columnSpanFull();
     }
 
-    /**
-     * @return Grid
-     */
-    public static function mainInformation(): Grid
+    public static function mainInformation(): Tabs
     {
-        return Grid::make(3)
+        return Tabs::make()
             ->columnSpanFull()
-            ->schema([
-                TextEntry::make('date')
+            ->contained(false)
+            ->tabs([
+                Tabs\Tab::make('Appointment details')
                     ->icon(PhosphorIcons::Calendar)
-                    ->date('d.m.Y')
-                    ->label('Date'),
+                    ->columns(3)
+                    ->schema([
+                        TextEntry::make('date')
+                            ->icon(PhosphorIcons::Calendar)
+                            ->date('d.m.Y')
+                            ->label('Date'),
 
-                TextEntry::make('from')
-                    ->icon(PhosphorIcons::Clock)
-                    ->state(function ($record) {
-                        $diff = $record->from->diffInMinutes($record->to);
-                        return $record->from->format('H:i') . ' - ' . $record->to->format('H:i') . ' (' . $diff . ' min)';
-                    })
-                    ->label('Duration'),
+                        TextEntry::make('from')
+                            ->icon(PhosphorIcons::Clock)
+                            ->state(function ($record) {
+                                $diff = $record->from->diffInMinutes($record->to);
+                                return $record->from->format('H:i') . ' - ' . $record->to->format('H:i') . ' (' . $diff . ' min)';
+                            })
+                            ->label('When'),
 
-                TextEntry::make('service.name')
-                    ->icon(PhosphorIcons::Hand)
-                    ->state(function ($record) {
-                        return $record->service->name . ' (' . Number::currency($record->service->currentPrice->price_with_vat) . ')';
-                    })
-                    ->label('Service'),
+                        TextEntry::make('branch.name')
+                            ->label('Location'),
 
-                TextEntry::make('serviceProvider.full_name')
-                    ->icon(PhosphorIcons::User)
-                    ->label('Veterinarian'),
+                        TextEntry::make('service.name')
+                            ->icon(PhosphorIcons::Hand)
+                            ->state(function ($record) {
+                                return $record->service->name . ' (' . Number::currency($record->service->currentPrice->price_with_vat) . ')';
+                            })
+                            ->label('Service'),
 
-                TextEntry::make('room.name')
-                    ->icon(PhosphorIcons::Bed)
-                    ->label('Room'),
+                        TextEntry::make('reason_for_coming')
+                            ->default('-')
+                            ->label('Reason for coming'),
 
-                TextEntry::make('note')
-                    ->columnSpanFull()
-                    ->default('-')
-                    ->label('Note')
-                    ->icon(PhosphorIcons::Note),
+                        TextEntry::make('serviceProvider.full_name')
+                            ->icon(PhosphorIcons::User)
+                            ->label('Veterinarian'),
+
+                        TextEntry::make('room.name')
+                            ->icon(PhosphorIcons::Bed)
+                            ->label('Room'),
+
+                        TextEntry::make('status_id')
+                            ->label('Status')
+                            ->badge(),
+
+                        TextEntry::make('user.full_name')
+                            ->label('Created by'),
+
+                        TextEntry::make('note')
+                            ->columnSpanFull()
+                            ->default('-')
+                            ->label('Note')
+                            ->icon(PhosphorIcons::Note),
+                    ]),
+                Tabs\Tab::make('Reminders')
+                    ->icon(PhosphorIcons::Bell)
+                    ->schema([
+                        SimpleAlert::make('no-reminders')
+                            ->info()
+                            ->border()
+                            ->title('No reminders set')
+                            ->description('This appointment has no reminders set')
+                            ->columnSpanFull()
+                    ]),
+
             ]);
     }
 
@@ -103,6 +133,7 @@ class ReservationInfolist
                         Flex::make([
                             ImageEntry::make('client.avatar_url')
                                 ->circular()
+                                ->defaultImageUrl('https://png.pngtree.com/png-vector/20210604/ourmid/pngtree-gray-avatar-placeholder-png-image_3416697.jpg')
                                 ->imageSize(100)
                                 ->hiddenLabel(),
                             Grid::make(1)
@@ -127,7 +158,7 @@ class ReservationInfolist
                     ->schema([
                         Flex::make([
                             ImageEntry::make('patient.avatar_url')
-                                ->defaultImageUrl('https://www.svgrepo.com/show/420337/animal-avatar-bear.svg')
+                                ->defaultImageUrl(asset('img/default-patient-profile.jpg'))
                                 ->circular()
                                 ->imageSize(100)
                                 ->hiddenLabel(),
@@ -154,13 +185,9 @@ class ReservationInfolist
     private static function headerActions()
     {
         return Flex::make([
-            EditAction::make()
-                ->outlined(),
-            Action::make('cancel-reservation')
-                ->outlined()
-                ->label('Cancel Reservation')
-                ->color('danger')
-                ->icon(PhosphorIcons::CalendarMinus)
+            CancelReservationAction::make(),
+            EditAction::make(),
+            DeleteAction::make(),
         ]);
     }
 }
