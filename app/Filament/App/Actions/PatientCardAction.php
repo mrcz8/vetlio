@@ -19,8 +19,9 @@ class PatientCardAction
             ->action(function ($action, $record) {
                 $action->redirect(PatientResource::getUrl('view', ['record' => $record]));
             })
+            ->hiddenLabel()
             ->outlined()
-            ->label('Patient card')
+            ->tooltip('Patient card')
             ->icon(PhosphorIcons::Dog);
     }
 }

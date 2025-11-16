@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\MedicalDocuments\Pages;
 
+use App\Filament\App\Resources\MedicalDocuments\HasHeaderActions;
 use App\Filament\App\Resources\MedicalDocuments\MedicalDocumentResource;
 use App\Filament\App\Schemas\DocumentForm;
 use App\Filament\App\Tables\DocumentsTable;
@@ -16,6 +17,8 @@ use Livewire\Livewire;
 
 class MedicalDocumentUploadDocuments extends ManageRelatedRecords
 {
+    use HasHeaderActions;
+
     protected static string $resource = MedicalDocumentResource::class;
 
     protected static string $relationship = 'documents';
@@ -36,13 +39,6 @@ class MedicalDocumentUploadDocuments extends ManageRelatedRecords
         $record = Livewire::current()->getRecord();
 
         return $record->documents_count;
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            CreateAction::make(),
-        ];
     }
 
     public function form(Schema $schema): Schema

@@ -58,7 +58,6 @@ class MedicalDocumentInfolist
                     ]),
 
                 RepeatableEntry::make('items')
-                    ->visible(fn($livewire) => $livewire->showItemsToPay)
                     ->columnSpanFull()
                     ->label(fn($record) => 'Items (' . count($record->items ?? []) . ')')
                     ->table([
@@ -94,7 +93,6 @@ class MedicalDocumentInfolist
                     ]),
 
                 Grid::make(4)
-                    ->visible(fn($livewire) => $livewire->showItemsToPay)
                     ->columnSpanFull()
                     ->schema([
                         TextEntry::make('items_sum_total')
