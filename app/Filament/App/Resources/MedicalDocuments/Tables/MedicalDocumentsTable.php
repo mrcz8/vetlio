@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\MedicalDocuments\Tables;
 
+use App\Enums\Icons\PhosphorIcons;
 use App\Filament\App\Actions\ClientCardAction;
 use App\Filament\Shared\Columns\CreatedAtColumn;
 use App\Filament\Shared\Columns\UpdatedAtColumn;
@@ -10,6 +11,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -19,14 +21,18 @@ class MedicalDocumentsTable
     {
         return $table
             ->columns([
+                IconColumn::make('locked_at')
+                    ->label('')
+                    ->tooltip(function($record) {
+                        return "Locked at: {$record->locked_at->format('d.m.Y H:i')} by {$record->userLocked->full_name}";
+                    })
+                    ->width('40px')
+                    ->icon(function($record) {
+                        return $record->locked_at ? Heroicon::LockClosed : null;
+                    }),
+
                 TextColumn::make('code')
                     ->label('Code')
-                    ->tooltip(function ($record) {
-                        return $record->locked_at ? 'The report is locked' : null;
-                    })
-                    ->icon(function ($record) {
-                        return $record->locked_at ? Heroicon::LockClosed : null;
-                    })
                     ->iconColor('danger')
                     ->searchable(),
 
