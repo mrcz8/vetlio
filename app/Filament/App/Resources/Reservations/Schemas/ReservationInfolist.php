@@ -8,14 +8,12 @@ use CodeWithDennis\SimpleAlert\Components\SimpleAlert;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Infolists\Components\ImageEntry;
-use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Flex;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\TextSize;
 use Illuminate\Support\Number;
 
@@ -186,7 +184,8 @@ class ReservationInfolist
     {
         return Flex::make([
             CancelReservationAction::make(),
-            EditAction::make(),
+            EditAction::make()
+            ->disabled(fn ($record) => $record->is_canceled),
             DeleteAction::make(),
         ]);
     }

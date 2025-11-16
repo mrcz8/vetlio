@@ -20,6 +20,7 @@ class EmailTemplatesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateActions([])
             ->columns([
                 TextColumn::make('name')
                     ->label('Name'),

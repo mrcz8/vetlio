@@ -164,7 +164,7 @@ class ReservationsTable
             ActionGroup::make([
                 ClientCardAction::make(),
                 EditAction::make()
-                    ->visible(fn($record) => !$record->canceled_at),
+                    ->visible(fn($record) => !$record->canceled_at && $record->status_id->isOrdered()),
                 DeleteAction::make(),
                 CancelReservationAction::make(),
             ]),

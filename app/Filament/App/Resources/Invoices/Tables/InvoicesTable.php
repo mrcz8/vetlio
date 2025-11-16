@@ -25,19 +25,6 @@ class InvoicesTable
             ->columns([
                 TextColumn::make('code')
                     ->sortable()
-                    ->icon(function ($record) {
-                        return $record->fiscalization_at
-                            ? PhosphorIcons::CheckCircleBold
-                            : PhosphorIcons::XCircleBold;
-                    })
-                    ->iconColor(function ($record) {
-                        return $record->fiscalization_at ? 'success' : 'danger';
-                    })
-                    ->tooltip(function ($record) {
-                        return $record->fiscalization_at
-                            ? 'Invoice successfully fiscalized'
-                            : 'Invoice not fiscalized';
-                    })
                     ->searchable()
                     ->label('Code'),
 

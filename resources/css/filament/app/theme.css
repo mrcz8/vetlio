@@ -1,9 +1,5 @@
-@import '../../../../vendor/filament/filament/resources/css/theme.css';
 @import '../../../../vendor/guava/calendar/resources/css/theme.css';
-
-@source '../../../../app/Filament/**/*';
-@source '../../../../resources/views/filament/**/*';
-@source '../../../../resources/views/filament/app/**/*';
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
 
 @source '../../../../vendor/codewithdennis/filament-simple-alert/resources/**/*.blade.php';
 @source inline('animate-{spin,pulse,bounce}');
@@ -15,6 +11,11 @@
 @source '../../../../vendor/devonab/filament-easy-footer/resources/views/**/*';
 @source '../../../../vendor/diogogpinto/filament-auth-ui-enhancer/resources/**/*.blade.php';
 @source '../../../../vendor/awcodes/filament-badgeable-column/resources/**/*.blade.php';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/views/filament/app/**/*';
+
 
 /* Task Form */
 .morph-related-select  {
@@ -41,3 +42,4 @@ Custom auth
 .custom-auth-empty-panel {
     @apply px-0;
 }
+

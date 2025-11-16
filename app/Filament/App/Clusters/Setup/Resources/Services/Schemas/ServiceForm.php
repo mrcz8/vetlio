@@ -2,8 +2,10 @@
 
 namespace App\Filament\App\Clusters\Setup\Resources\Services\Schemas;
 
+use App\Filament\App\Clusters\Setup\Resources\ServiceGroups\ServiceGroupResource;
 use App\Models\ServiceGroup;
 use Awcodes\Palette\Forms\Components\ColorPicker;
+use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -36,11 +38,9 @@ class ServiceForm
                         Select::make('service_group_id')
                             ->relationship('serviceGroup', 'name')
                             ->label('Group')
-                            ->createOptionForm([
-                                TextInput::make('name')
-                                    ->label('Name')
-                                    ->required(),
-                            ])
+                            ->createOptionForm(function(Schema $schema){
+                                return ServiceGroupResource::form($schema);
+                            })
                             ->createOptionUsing(fn(array $data) => ServiceGroup::create($data)->id)
                             ->required(),
 
@@ -50,19 +50,16 @@ class ServiceForm
                             ->default(true)
                             ->required(),
 
-                        Grid::make(2)
-                            ->schema([
-                                TimePicker::make('duration')
-                                    ->default('00:15')
-                                    ->label('Duration')
-                                    ->seconds(false)
-                                    ->native(false)
-                                    ->minutesStep(5)
-                                    ->required(),
+                        TimePicker::make('duration')
+                            ->default('00:15')
+                            ->label('Duration')
+                            ->seconds(false)
+                            ->native(false)
+                            ->minutesStep(5)
+                            ->required(),
 
-                                ColorPicker::make('color')
-                                    ->label('Color'),
-                            ]),
+                        ColorPicker::make('color')
+                            ->label('Color'),
 
                         TextEntry::make('placeholder')
                             ->html()
@@ -71,10 +68,12 @@ class ServiceForm
                             ->state(new HtmlString('<hr class="border-gray-200"/>')),
 
                         CheckboxList::make('users')
+                            ->bulkToggleable()
                             ->label('Staff')
                             ->relationship('users', 'first_name'),
 
                         CheckboxList::make('rooms')
+                            ->bulkToggleable()
                             ->label('Rooms')
                             ->relationship('rooms', 'name'),
                     ]),
