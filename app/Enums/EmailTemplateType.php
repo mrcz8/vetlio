@@ -8,12 +8,14 @@ enum EmailTemplateType : int implements HasLabel
 {
     case CancelAppointment = 1;
     case NewAppointment = 2;
+    case SendMedicalDocument = 3;
 
     public function getLabel(): ?string
     {
         return match ($this) {
             self::CancelAppointment => 'Cancel appointment',
             self::NewAppointment => 'New appointment',
+            self::SendMedicalDocument => 'Send medical document',
         };
     }
 
@@ -32,6 +34,7 @@ enum EmailTemplateType : int implements HasLabel
         return match ($this) {
             self::NewAppointment,
             self::CancelAppointment => ['id' => 1, 'label' => 'Appointment'],
+            self::SendMedicalDocument => ['id' => 3, 'label' => 'Medical Documents'],
         };
     }
 
