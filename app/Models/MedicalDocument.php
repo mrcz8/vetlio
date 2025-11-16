@@ -33,6 +33,7 @@ class MedicalDocument extends Model implements HasMedia, TaskRelated
         'price_list_id',
         'patient_id',
         'client_id',
+        'diagnosis',
         'content',
         'locked_at',
         'locked_user_id',
@@ -41,6 +42,7 @@ class MedicalDocument extends Model implements HasMedia, TaskRelated
     ];
 
     protected $casts = [
+        'diagnosis' => 'array',
         'locked_at' => 'datetime',
         'sequence' => 'array'
     ];

@@ -26,6 +26,7 @@ return new class extends Migration {
             $table->unsignedInteger('user_id');
             $table->unsignedInteger('locked_user_id')->nullable();
             $table->timestamp('locked_at')->nullable();
+            $table->text('diagnosis')->nullable();
             $table->unsignedInteger('organisation_id');
             $table->softDeletes();
             $table->timestamps();

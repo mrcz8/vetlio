@@ -64,7 +64,6 @@ class Announcement extends Model
         $now = now();
 
         return $query
-            ->where('active', true)
             ->where(function ($q) use ($now) {
                 $q->whereNull('starts_at')->orWhere('starts_at', '<=', $now);
             })

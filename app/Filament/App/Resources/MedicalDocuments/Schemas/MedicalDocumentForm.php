@@ -10,6 +10,7 @@ use CodeWithDennis\SimpleAlert\Components\SimpleAlert;
 use Filament\Actions\Action;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -72,6 +73,12 @@ class MedicalDocumentForm
                                     ->compact()
                                     ->columnSpan(3)
                                     ->schema([
+                                        TagsInput::make('diagnosis')
+                                            ->reorderable()
+                                            ->required()
+                                            ->suggestions([
+                                                'A.00', 'C.00'
+                                            ]),
                                         RichEditor::make('content')
                                             ->autofocus()
                                             ->hintActions([
@@ -79,13 +86,12 @@ class MedicalDocumentForm
                                                 self::saveAsTemplateAction(),
                                             ])
                                             ->hiddenLabel()
-                                            ->extraAttributes([
+                                            ->extraInputAttributes([
                                                 'style' => 'min-height: 600px;',
                                             ])
                                             ->label('Content')
                                             ->required(),
                                     ]),
-
                                 Section::make()
                                     ->compact()
                                     ->columnSpan(1)
