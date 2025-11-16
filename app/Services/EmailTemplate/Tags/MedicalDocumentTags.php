@@ -3,13 +3,14 @@
 namespace App\Services\EmailTemplate\Tags;
 
 use App\Contracts\EmailTagProvider;
+use App\Models\MedicalDocument;
 use App\Models\Reservation;
 
 class MedicalDocumentTags implements EmailTagProvider
 {
     public function supports(mixed $model): bool
     {
-        return $model instanceof Reservation;
+        return $model instanceof MedicalDocument;
     }
 
     public static function getAvailableTags(): array
