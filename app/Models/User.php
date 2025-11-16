@@ -4,9 +4,9 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Observers\UserObserver;
-use App\Traits\HasAnnouncements;
 use App\Traits\Organisationable;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Models\Contracts\HasDefaultTenant;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Storage;
 use Zap\Models\Concerns\HasSchedules;
 
 #[ObservedBy(UserObserver::class)]
-class User extends Authenticatable implements HasTenants, HasDefaultTenant, FilamentUser, Resourceable
+class User extends Authenticatable implements HasTenants, HasDefaultTenant, FilamentUser, Resourceable, HasAvatar
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory,

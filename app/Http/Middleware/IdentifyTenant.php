@@ -23,7 +23,6 @@ class IdentifyTenant
             abort(404);
         }
 
-        //Da li je upit prava domena, ako da, pronađi smještaj. Ako ga nema vrati 404.
         if ($isSubdomain) {
             $tenant = $this->getTenantWithDomain($this->getSubdomain($request));
 

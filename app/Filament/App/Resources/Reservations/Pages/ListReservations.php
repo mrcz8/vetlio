@@ -162,7 +162,6 @@ class ListReservations extends ListRecords
         $from = $this->getTable()->getFilter('date')?->getState()['from'] ?? now()->startOfDay();
         $to = $this->getTable()->getFilter('date')?->getState()['to'] ?? now()->endOfDay();
 
-        //dd($this->getTable());
         $baseQuery = $this->getModel()::query()
             ->when($from, fn($q) => $q->whereDate('date', '>=', $from))
             ->when($to, fn($q) => $q->whereDate('date', '<=', $to))

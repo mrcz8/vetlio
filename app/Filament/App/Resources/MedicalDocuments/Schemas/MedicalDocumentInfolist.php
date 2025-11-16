@@ -52,7 +52,9 @@ class MedicalDocumentInfolist
                 Section::make()
                     ->columnSpanFull()
                     ->schema([
-                        RichContentRenderer::make('content'),
+                        TextEntry::make('content')
+                        ->hiddenLabel()
+                        ->html()
                     ]),
 
                 RepeatableEntry::make('items')

@@ -21,6 +21,14 @@ class UserForm
     {
         return $schema
             ->components([
+                FileUpload::make('profile_image')
+                    ->avatar()
+                    ->directory('user/avatars')
+                    ->circleCropper()
+                    ->disk('public')
+                    ->alignCenter()
+                    ->columnSpanFull(),
+
                 TextInput::make('first_name')
                     ->label('First Name')
                     ->required()
@@ -110,7 +118,7 @@ class UserForm
                     })
                     ->options(function (Get $get, $operation) {
                         if ($get('branches')) {
-                            $branchIds = collect($get('branches'))->map(fn($branch) => (int) $branch);
+                            $branchIds = collect($get('branches'))->map(fn($branch) => (int)$branch);
                             return Branch::whereIn('id', $branchIds->toArray())->pluck('name', 'id');
                         }
 
@@ -142,14 +150,14 @@ class UserForm
                             ->default(false)
                             ->onColor('success')
                             ->inline(false)
-                            ->disabled(fn() => ! auth()->user()->administrator)
+                            ->disabled(fn() => !auth()->user()->administrator)
                             ->label('Administrator'),
 
                         Toggle::make('fiscalization_enabled')
                             ->default(false)
                             ->inline(false)
                             ->label('Fiscalization Enabled')
-                            ->disabled(fn($get) => ! $get('oib')),
+                            ->disabled(fn($get) => !$get('oib')),
                     ]),
 
                 FileUpload::make('signature_path')
