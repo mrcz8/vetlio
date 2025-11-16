@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Invoices\Pages;
 
+use App\Enums\EmailTemplateType;
 use App\Enums\Icons\PhosphorIcons;
 use App\Enums\PaymentMethod;
 use App\Filament\App\Actions\ClientCardAction;
@@ -10,6 +11,7 @@ use App\Filament\App\Resources\Invoices\InvoiceResource;
 use App\Filament\App\Resources\Payments\Schemas\PaymentForm;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Services\EmailTemplate\EmailTemplateRenderer;
 use App\Services\InvoiceService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -18,7 +20,6 @@ use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Number;
 
 class ViewInvoice extends ViewRecord
 {
@@ -43,15 +44,27 @@ class ViewInvoice extends ViewRecord
         return SendEmailAction::make()
             ->fillForm(function ($data) {
                 $data['receivers'] = [$this->getRecord()->client->email];
-                $data['subject'] = 'Your invoice: ' . $this->getRecord()->code;
-                $data['body'] = 'Please find attached your invoice. The total amount is: ' . Number::currency($this->getRecord()->total) . '.';
+
+                $branch = $this->getRecord()->branch;
+
+                $email = EmailTemplateRenderer::make()
+                    ->forBranch($branch->id)
+                    ->for(EmailTemplateType::SendInvoice)
+                    ->withContext([
+                        'branch' => $branch,
+                        'client' => $this->getRecord()->client,
+                        'invoice' => $this->getRecord(),
+                        'organisation' => $this->getRecord()->organisation,
+                    ])
+                    ->resolve();
+
+                if ($email === null) return $data;
+
+                $data['subject'] = $email['subject'];
+                $data['body'] = $email['body'];;
+
                 return $data;
-            })
-            ->outlined()
-            ->hiddenLabel()
-            ->subject('Your invoice')
-            ->label('Send email')
-            ->icon(PhosphorIcons::Envelope);
+            });
     }
 
     protected function getHeaderActions(): array

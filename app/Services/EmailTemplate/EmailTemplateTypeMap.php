@@ -6,7 +6,10 @@ use App\Enums\EmailTemplateType;
 use App\Services\EmailTemplate\Tags\AppointmentTags;
 use App\Services\EmailTemplate\Tags\BranchTags;
 use App\Services\EmailTemplate\Tags\ClientTags;
+use App\Services\EmailTemplate\Tags\InvoiceTags;
+use App\Services\EmailTemplate\Tags\MedicalDocumentTags;
 use App\Services\EmailTemplate\Tags\OrganisationTags;
+use App\Services\EmailTemplate\Tags\PatientTags;
 
 class EmailTemplateTypeMap
 {
@@ -18,6 +21,20 @@ class EmailTemplateTypeMap
                 ClientTags::class,
                 BranchTags::class,
                 AppointmentTags::class
+            ],
+            EmailTemplateType::SendMedicalDocument->value => [
+                OrganisationTags::class,
+                ClientTags::class,
+                BranchTags::class,
+                AppointmentTags::class,
+                PatientTags::class,
+                MedicalDocumentTags::class
+            ],
+            EmailTemplateType::SendInvoice->value => [
+                OrganisationTags::class,
+                ClientTags::class,
+                BranchTags::class,
+                InvoiceTags::class
             ],
             default => [],
         };

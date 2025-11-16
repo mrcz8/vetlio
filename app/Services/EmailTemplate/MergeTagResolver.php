@@ -17,7 +17,6 @@ class MergeTagResolver
 
         $providerClasses = EmailTemplateTypeMap::getProvidersForType($type);
         $this->providers = array_map(fn($class) => app($class), $providerClasses);
-
         return $this;
     }
 

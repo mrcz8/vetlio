@@ -2,18 +2,23 @@
 
 namespace App\Filament\App\Resources\MedicalDocuments;
 
+use App\Enums\EmailTemplateType;
 use App\Enums\Icons\PhosphorIcons;
 use App\Filament\App\Actions\ClientCardAction;
 use App\Filament\App\Actions\PatientCardAction;
+use App\Filament\App\Actions\SendEmailAction;
 use App\Filament\App\Resources\Invoices\InvoiceResource;
 use App\Filament\App\Resources\MedicalDocuments\Actions\EditMedicalDocumentAction;
 use App\Filament\App\Resources\MedicalDocuments\Pages\MedicalDocumentTasks;
 use App\Filament\App\Resources\MedicalDocuments\Pages\MedicalDocumentUploadDocuments;
 use App\Models\MedicalDocument;
+use App\Services\EmailTemplate\EmailTemplateRenderer;
+use App\Services\EmailTemplate\EmailTemplateService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
+use Filament\Facades\Filament;
 use Filament\Support\Icons\Heroicon;
 
 trait HasHeaderActions
@@ -79,6 +84,32 @@ trait HasHeaderActions
                 ->outlined()
                 ->hiddenLabel()
                 ->icon(Heroicon::Printer),
+
+            SendEmailAction::make()
+                ->fillForm(function ($data) {
+                    $data['receivers'] = [$this->getRecord()->client->email];
+
+                    $branch = $this->getRecord()->branch;
+
+                    $email = EmailTemplateRenderer::make()
+                        ->forBranch($branch->id)
+                        ->for(EmailTemplateType::SendMedicalDocument)
+                        ->withContext([
+                            'branch' => $branch,
+                            'client' => $this->getRecord()->client,
+                            'patient' => $this->getRecord()->patient,
+                            'organisation' => $this->getRecord()->organisation,
+                            'medical-document' => $this->getRecord(),
+                        ])
+                        ->resolve();
+
+                    if($email === null) return $data;
+
+                    $data['subject'] = $email['subject'];
+                    $data['body'] = $email['body'];;
+
+                    return $data;
+                }),
 
             ActionGroup::make([
                 ClientCardAction::make(),
