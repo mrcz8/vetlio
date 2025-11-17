@@ -21,7 +21,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Facades\Filament;
 use Filament\Support\Icons\Heroicon;
 
-trait HasHeaderActions
+trait HasMedicalDocumentHeaderActions
 {
     public function getHeaderActions(): array
     {
