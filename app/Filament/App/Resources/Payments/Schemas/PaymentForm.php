@@ -24,6 +24,7 @@ class PaymentForm
                     ->disabled(),
 
                 Select::make('branch_id')
+                    ->disabled()
                     ->relationship('branch', 'name')
                     ->default(Filament::getTenant()->id)
                     ->required()
@@ -31,6 +32,7 @@ class PaymentForm
 
                 DateTimePicker::make('payment_at')
                     ->default(now())
+                    ->seconds(false)
                     ->label('Payment Date')
                     ->required(),
 
@@ -50,6 +52,7 @@ class PaymentForm
 
                 Select::make('client_id')
                     ->relationship('client', 'first_name')
+                    ->getOptionLabelFromRecordUsing(fn($record) => $record->full_name)
                     ->required()
                     ->label('Client'),
 

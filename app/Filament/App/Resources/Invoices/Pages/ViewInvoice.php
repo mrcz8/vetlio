@@ -15,7 +15,7 @@ use App\Services\EmailTemplate\EmailTemplateRenderer;
 use App\Services\InvoiceService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Field;
 use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Icons\Heroicon;
@@ -80,6 +80,45 @@ class ViewInvoice extends ViewRecord
                 ->successRedirectUrl(fn($record) => InvoiceResource::getUrl('view', ['record' => $record->canceledInvoice]))
                 ->action(fn($record, Action $action) => app(InvoiceService::class)->cancelInvoice($record)),
 
+            Action::make('createPayment')
+                ->label('Add payment')
+                ->color('success')
+                ->hidden(function(Invoice $record) {
+                    return $record->payed || $record->storno_of_id != null;
+                })
+                ->icon(PhosphorIcons::CreditCard)
+                ->modalIcon(PhosphorIcons::CreditCard)
+                ->modalHeading('Payment for invoice')
+                ->model(Payment::class)
+                ->schema(function ($schema) {
+                    $form = PaymentForm::configure($schema);
+                    $form->columns(2);
+
+                    collect($form->getFlatComponents())->each(function (Field $component) {
+                        if (in_array($component->getName(), ['client_id', 'payment_method_id', 'branch_id'])) $component->disabled();
+                    });
+
+                    return $form;
+                })
+                ->fillForm(function ($data) {
+                    $data['payment_at'] = now();
+                    $data['client_id'] = $this->getRecord()->client_id;
+                    $data['branch_id'] = $this->getRecord()->branch_id;
+                    $data['amount'] = $this->getRecord()->total;
+                    $data['payment_method_id'] = PaymentMethod::BANK;
+                    $data['note'] = 'Payment for invoice: ' . $this->getRecord()->code;
+                    return $data;
+                })
+                ->successNotificationTitle('Payment added successfully')
+                ->action(function ($record, $data) {
+                    $data['payment_method_id'] = PaymentMethod::BANK;
+                    $data['branch_id'] = $record->branch_id;
+                    $data['client_id'] = $record->client_id;
+
+                    $record->payments()->create($data);
+                })
+                ->visible(fn($record) => !$record->payed),
+
             ActionGroup::make([
                 Action::make('print')
                     ->label('Print')
@@ -94,15 +133,6 @@ class ViewInvoice extends ViewRecord
                     ->url(fn(Invoice $record) => route('print.invoices.download', ['record' => $record]))
                     ->icon(PhosphorIcons::FilePdfFill)
                     ->openUrlInNewTab(),
-
-                Action::make('download-pdf')
-                    ->label('Download PDF')
-                    ->outlined()
-                    ->schema([
-                        TextInput::make('code'),
-                    ])
-                    ->action(fn() => dd('Generating print...'))
-                    ->icon(PhosphorIcons::Download),
             ])
                 ->hiddenLabel()
                 ->icon(Heroicon::Printer)
@@ -111,31 +141,12 @@ class ViewInvoice extends ViewRecord
 
             $this->sendInvoiceByEmailAction(),
 
+
             ActionGroup::make([
+
                 ClientCardAction::make()
                     ->record($this->getRecord()->client),
             ])->label('More')->button()->outlined(),
-
-            Action::make('createPayment')
-                ->label('Add payment')
-                ->color('success')
-                ->icon(PhosphorIcons::CreditCard)
-                ->modalIcon(PhosphorIcons::CreditCard)
-                ->modalHeading('Payment for invoice')
-                ->model(Payment::class)
-                ->schema(fn($schema) => PaymentForm::configure($schema)->columns(2))
-                ->fillForm(function ($data) {
-                    $data['payment_at'] = now();
-                    $data['client_id'] = $this->getRecord()->client_id;
-                    $data['branch_id'] = $this->getRecord()->branch_id;
-                    $data['amount'] = $this->getRecord()->total;
-                    $data['payment_method_id'] = PaymentMethod::BANK;
-                    $data['note'] = 'Payment for invoice: ' . $this->getRecord()->code;
-                    return $data;
-                })
-                ->successNotificationTitle('Payment added successfully')
-                ->action(fn($record, $data) => $record->payments()->create($data))
-                ->visible(fn($record) => !$record->payed),
         ];
     }
 }
