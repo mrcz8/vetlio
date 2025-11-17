@@ -2,7 +2,7 @@
 
 namespace App\Filament\App\Resources\MedicalDocuments\Pages;
 
-use App\Filament\App\Resources\MedicalDocuments\HasHeaderActions;
+use App\Filament\App\Resources\MedicalDocuments\HasMedicalDocumentHeaderActions;
 use App\Filament\App\Resources\MedicalDocuments\MedicalDocumentResource;
 use App\Filament\App\Schemas\DocumentForm;
 use App\Filament\App\Tables\DocumentsTable;
@@ -17,7 +17,7 @@ use Livewire\Livewire;
 
 class MedicalDocumentUploadDocuments extends ManageRelatedRecords
 {
-    use HasHeaderActions;
+    use HasMedicalDocumentHeaderActions;
 
     protected static string $resource = MedicalDocumentResource::class;
 

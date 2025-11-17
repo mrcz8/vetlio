@@ -3,7 +3,7 @@
 namespace App\Filament\App\Resources\MedicalDocuments\Pages;
 
 use App\Enums\Icons\PhosphorIcons;
-use App\Filament\App\Resources\MedicalDocuments\HasHeaderActions;
+use App\Filament\App\Resources\MedicalDocuments\HasMedicalDocumentHeaderActions;
 use App\Filament\App\Resources\MedicalDocuments\MedicalDocumentResource;
 use BackedEnum;
 use Filament\Resources\Pages\ManageRelatedRecords;
@@ -13,7 +13,7 @@ use Livewire\Livewire;
 
 class MedicalDocumentPastItems extends ManageRelatedRecords
 {
-    use HasHeaderActions;
+    use HasMedicalDocumentHeaderActions;
 
     protected static string $resource = MedicalDocumentResource::class;
 

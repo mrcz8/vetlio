@@ -12,20 +12,20 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ReservationCanceled extends Notification
+class AppointmentCanceledNotification extends Notification
 {
     use Queueable;
 
-    private Reservation $reservation;
+    private Reservation $appointment;
 
     private ?array $templateContent = null;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(Reservation $reservation)
+    public function __construct(Reservation $appointment)
     {
-        $this->reservation = $reservation;
+        $this->appointment = $appointment;
 
         $this->templateContent = $this->getEmailTemplateContent();
     }
@@ -76,15 +76,15 @@ class ReservationCanceled extends Notification
 
     private function getEmailTemplateContent(): ?array
     {
-        $branch = $this->reservation->branch;
+        $branch = $this->appointment->branch;
 
         return EmailTemplateRenderer::make()
             ->for(EmailTemplateType::CancelAppointment)
             ->withContext([
                 'branch' => $branch,
-                'client' => $this->reservation->client,
-                'organisation' => $this->reservation->organisation,
-                'appointment' => $this->reservation,
+                'client' => $this->appointment->client,
+                'organisation' => $this->appointment->organisation,
+                'appointment' => $this->appointment,
             ])
             ->forBranch($branch->id)
             ->resolve();

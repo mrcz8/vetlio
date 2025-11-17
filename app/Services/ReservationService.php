@@ -7,7 +7,7 @@ use App\Events\AppointmentRequestApproved;
 use App\Events\AppointmentRequestDenied;
 use App\Models\AppointmentRequest;
 use App\Models\Reservation;
-use App\Notifications\ReservationCanceled;
+use App\Notifications\AppointmentCanceledNotification;
 
 class ReservationService
 {
@@ -21,11 +21,11 @@ class ReservationService
         ]);
 
         //Alert service provider
-        $reservation->serviceProvider->notify(new ReservationCanceled($reservation));
+        $reservation->serviceProvider->notify(new AppointmentCanceledNotification($reservation));
 
         //Send email to client
         if ($sendEmail) {
-            $reservation->client->notify(new ReservationCanceled($reservation));
+            $reservation->client->notify(new AppointmentCanceledNotification($reservation));
         }
     }
 

@@ -2,14 +2,14 @@
 
 namespace App\Filament\App\Resources\MedicalDocuments\Pages;
 
-use App\Filament\App\Resources\MedicalDocuments\HasHeaderActions;
+use App\Filament\App\Resources\MedicalDocuments\HasMedicalDocumentHeaderActions;
 use App\Filament\App\Resources\MedicalDocuments\MedicalDocumentResource;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Contracts\Support\Htmlable;
 
 class ViewMedicalDocument extends ViewRecord
 {
-    use HasHeaderActions;
+    use HasMedicalDocumentHeaderActions;
 
     protected static string $resource = MedicalDocumentResource::class;
 

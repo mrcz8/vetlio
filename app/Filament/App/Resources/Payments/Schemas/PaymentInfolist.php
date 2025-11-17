@@ -10,9 +10,6 @@ class PaymentInfolist
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextEntry::make('code')
-            ]);
+        return $schema;
     }
 }

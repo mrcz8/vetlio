@@ -12,14 +12,11 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\TextSize;
 use Illuminate\Support\HtmlString;
-use Endroid\QrCode\Builder\Builder;
-use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\ErrorCorrectionLevel;
-use Endroid\QrCode\Writer\PngWriter;
 
 class InvoiceInfolist
 {
@@ -29,10 +26,11 @@ class InvoiceInfolist
             ->columns(1)
             ->components([
                 static::canceledInvoiceAlert(),
-
-                Section::make()->contained()
+                Section::make()
+                    ->contained()
                     ->schema([
                         Grid::make(3)
+                            ->gap(false)
                             ->schema([
                                 static::getOrganisationInformationBlock(),
                                 static::getClientInformationBlock()
@@ -79,7 +77,6 @@ class InvoiceInfolist
                             ->columnSpanFull()
                             ->schema([
                                 ImageEntry::make('qrcode')
-                                    ->visible(fn(Invoice $record) => $record->fiscalization_at)
                                     ->hiddenLabel()
                                     ->columnSpan(1)
                                     ->label('QR Code'),
@@ -87,7 +84,7 @@ class InvoiceInfolist
                             ]),
 
                         TextEntry::make('terms_and_conditions')
-                            ->label('Terms and conditions')
+                            ->label(new HtmlString('<span class="font-bold">Terms and conditions:</span>'))
                             ->visible(fn(Invoice $record) => $record->terms_and_conditions)
                             ->columnSpanFull(),
                     ]),
@@ -140,12 +137,12 @@ class InvoiceInfolist
 
                 TextEntry::make('client.address')
                     ->hiddenLabel()
-                    ->extraAttributes(['class' => 'text-right'])
+                    ->alignEnd()
                     ->size(TextSize::Small),
 
                 TextEntry::make('client.city')
-                    ->extraAttributes(['class' => 'text-right'])
                     ->hiddenLabel()
+                    ->alignEnd()
                     ->size(TextSize::Small)
                     ->state(function (Invoice $record) {
                         return $record->client->city . ', ' . $record->client->zip_code;
@@ -156,29 +153,38 @@ class InvoiceInfolist
     private static function invoiceInformation()
     {
         return Grid::make(1)
-            ->extraAttributes(['class' => 'text-right'])
             ->columnStart(3)
-            ->columnSpan(2)
-            ->gap(false)
+            ->columnSpan(3)
+            ->dense()
             ->schema([
                 TextEntry::make('invoice_date')
                     ->label('Invoice date:')
                     ->inlineLabel()
+                    ->alignEnd()
                     ->dateTime('d.m.Y H:i')
+                    ->weight(FontWeight::SemiBold),
+
+                TextEntry::make('branch.name')
+                    ->label('Branch')
+                    ->alignRight()
+                    ->inlineLabel()
                     ->weight(FontWeight::SemiBold),
 
                 TextEntry::make('payment_method_id')
                     ->label('Payment method')
+                    ->alignRight()
                     ->inlineLabel()
                     ->weight(FontWeight::SemiBold),
 
                 TextEntry::make('user.full_name')
                     ->label('Created by:')
+                    ->alignRight()
                     ->inlineLabel()
                     ->weight(FontWeight::SemiBold),
 
                 TextEntry::make('zki')
                     ->label('ZKI:')
+                    ->alignRight()
                     ->visible(fn(Invoice $record) => $record->fiscalization_at)
                     ->inlineLabel()
                     ->weight(FontWeight::SemiBold),
@@ -187,6 +193,7 @@ class InvoiceInfolist
                     ->label('JIR:')
                     ->visible(fn(Invoice $record) => $record->fiscalization_at)
                     ->inlineLabel()
+                    ->alignRight()
                     ->weight(FontWeight::SemiBold),
             ]);
     }
@@ -242,8 +249,11 @@ class InvoiceInfolist
                     ->columnStart(3)
                     ->size(TextSize::Large)
                     ->money('EUR')
-                    ->label(new HtmlString('<span class="text-lg">Grand total:</span>'))
-                    ->extraAttributes(['class' => 'text-lg'])
+                    ->extraEntryWrapperAttributes([
+                        'class' => 'mt-4',
+                    ])
+                    ->label(new HtmlString('<span class="text-2xl">Grand total:</span>'))
+                    ->extraAttributes(['class' => 'text-2xl'])
                     ->weight(FontWeight::Bold),
             ]);
     }

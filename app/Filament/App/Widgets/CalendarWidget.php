@@ -5,11 +5,15 @@ namespace App\Filament\App\Widgets;
 use App\Enums\CalendarEventsType;
 use App\Filament\App\Actions\CancelReservationAction;
 use App\Filament\App\Resources\Reservations\Schemas\ReservationForm;
+use App\Filament\App\Resources\Reservations\Schemas\ReservationInfolist;
 use App\Models\Client;
 use App\Models\Reservation;
 use App\Models\User;
 use App\Queries\Holidays;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Filament\Actions\Action;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\ToggleButtons;
@@ -21,6 +25,7 @@ use Guava\Calendar\Filament\Actions\CreateAction;
 use Guava\Calendar\Filament\Actions\ViewAction;
 use Guava\Calendar\Filament\CalendarWidget as BaseCalendarWidget;
 use Guava\Calendar\ValueObjects\CalendarEvent;
+use Guava\Calendar\ValueObjects\DatesSetInfo;
 use Guava\Calendar\ValueObjects\FetchInfo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
@@ -28,6 +33,10 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
+use Spatie\Period\Period;
+use Spatie\Period\PeriodCollection;
+use Spatie\Period\Precision;
 
 class CalendarWidget extends BaseCalendarWidget
 {
@@ -58,6 +67,8 @@ class CalendarWidget extends BaseCalendarWidget
     public ?int $selectedClient = null;
 
     public ?int $calendarEventsType = 1;
+
+    protected bool $useFilamentTimezone = true;
 
     public function getHeaderActions(): array
     {
@@ -112,6 +123,57 @@ class CalendarWidget extends BaseCalendarWidget
         $this->calendarEventsType = 1;
         $this->selectedClient = null;
         $this->selectedUsers = User::all()->pluck('id');
+    }
+
+    protected function onDatesSet(DatesSetInfo $info): void
+    {
+        $workingTimes = $this->getEarliestWorkingStartForDate($info->start);
+        $this->setOption('slotMinTime', $workingTimes['min']);
+        $this->setOption('slotMaxTime', $workingTimes['max']);
+    }
+
+    protected function getEarliestWorkingStartForDate(CarbonInterface|string $date): array
+    {
+        if (! $date instanceof CarbonInterface) {
+            $date = Carbon::parse($date);
+        }
+
+        $schedule = Filament::getTenant()->work_schedule ?? [];
+
+        $dayName = strtolower($date->format('l'));
+        $flagKey = "{$dayName}_working";
+
+        $isWorking = $schedule[$flagKey] ?? false;
+        $intervals = $schedule[$dayName] ?? [];
+
+        if (! $isWorking || empty($intervals)) {
+            return [
+                'min' => '06:00',
+                'max' => '22:00',
+            ];
+        }
+
+        $collection = collect($intervals);
+
+        $earliestFrom = $collection
+            ->pluck('from')
+            ->filter()
+            ->sort()
+            ->first();
+
+        $latestTo = $collection
+            ->pluck('to')
+            ->filter()
+            ->sortDesc()
+            ->first();
+
+        $min = $earliestFrom ?: '06:00';
+        $max = $latestTo ?: ($earliestFrom ?: '06:00');
+
+        return [
+            'min' => $min,
+            'max' => $max,
+        ];
     }
 
     public function getHeading(): null|string|HtmlString
@@ -187,8 +249,9 @@ class CalendarWidget extends BaseCalendarWidget
             'slotDuration' => '00:15:00',
             'slotLabelInterval' => '00:15:00',
             'slotHeight' => 50,
-            'slotMinTime' => '08:00:00',
+            'slotMinTime' => '06:00:00',
             'slotMaxTime' => '20:00:00',
+            'nowIndicator' => true,
         ];
     }
 
@@ -258,6 +321,13 @@ class CalendarWidget extends BaseCalendarWidget
     public function viewAction(): ViewAction
     {
         return ViewAction::make($this->view)
+            ->record(function ($livewire) {
+                return $livewire->getEventRecord();
+            })
+            ->schema(function ($schema, $record) {
+                return ReservationInfolist::configure($schema)
+                    ->record($record);
+            })
             ->label('Open');
     }
 
@@ -279,16 +349,123 @@ class CalendarWidget extends BaseCalendarWidget
         return User::query();
     }
 
+    protected function nonWorkingPeriods(FetchInfo $fetchInfo): Collection
+    {
+        $events = [];
+        $schedule = Filament::getTenant()->work_schedule ?? [];
+
+        // Guava daje CarbonImmutable start/end
+        $start = $fetchInfo->start->copy()->startOfDay();
+        $end   = $fetchInfo->end->copy()->subSecond()->startOfDay();
+
+        $currentDate = $start->copy();
+
+        while ($currentDate->lte($end)) {
+            $dayName = strtolower($currentDate->format('l'));
+
+            $flagKey = "{$dayName}_working";
+
+            $isWorking = $schedule[$flagKey] ?? false;
+            $intervals = $schedule[$dayName] ?? [];
+
+            if (! $isWorking || empty($intervals)) {
+                $full = Period::make(
+                    $currentDate->startOfDay(),
+                    $currentDate->endOfDay(),
+                    Precision::SECOND()
+                );
+
+                $events[] = [
+                    'start'      => CarbonImmutable::instance($full->start()),
+                    'end'        => CarbonImmutable::instance($full->end()),
+                    'classNames' => ['non-working'],
+                ];
+
+                $currentDate = $currentDate->addDay();
+                continue;
+            }
+
+            $fullDay = Period::make(
+                $currentDate->startOfDay(),
+                $currentDate->endOfDay(),
+                Precision::SECOND()
+            );
+
+            $workingPeriods = collect($intervals)
+                ->filter(fn ($i) => ! empty($i['from']) && ! empty($i['to'] ))
+                ->map(function($i) use ($currentDate){
+                    return Period::make(
+                        $currentDate->setTimeFromTimeString($i['from']),
+                        $currentDate->setTimeFromTimeString($i['to']),
+                        Precision::SECOND()
+                    );
+                })
+                ->values()
+                ->all();
+
+            if (empty($workingPeriods)) {
+                $full = Period::make(
+                    $currentDate->startOfDay(),
+                    $currentDate->endOfDay(),
+                    Precision::SECOND()
+                );
+
+                $events[] = [
+                    'start'      => CarbonImmutable::instance($full->start()),
+                    'end'        => CarbonImmutable::instance($full->end()),
+                    'classNames' => ['non-working'],
+                ];
+
+                $currentDate = $currentDate->addDay();
+                continue;
+            }
+
+            $nonWorking = $fullDay->subtract(...$workingPeriods);
+
+            foreach ($nonWorking as $period) {
+                //dump($period->start(), $period->end());
+                $events[] = [
+                    'start'      => CarbonImmutable::instance($period->start()),
+                    'end'        => CarbonImmutable::instance($period->end()),
+                    'classNames' => ['non-working'],
+                ];
+            }
+
+            $currentDate = $currentDate->addDay();
+        }
+
+        // Map u Guava CalendarEvent
+        return collect($events)->map(function ($event) {
+            return CalendarEvent::make()
+                ->key(Str::uuid())
+                ->title('NON WORKING')
+                ->start($event['start'])
+                ->end($event['end'])
+                //->backgroundColor('red')
+                ->displayBackground()
+                ->classes([
+                    "bg-[repeating-linear-gradient(45deg,theme(colors.gray.400)_0,theme(colors.gray.400)_1px,transparent_1px,transparent_3px)]"
+                ])
+                ->resourceIds(
+                    array_values(
+                        $this->getResources()->get()->pluck('id')->toArray()
+                    )
+                );
+        });
+    }
+
     protected function getEvents(FetchInfo $info): Collection|array|Builder
     {
         $org = auth()->user()->organisation;
 
+        $nonWorkingPeriods = $this->nonWorkingPeriods($info);
         $reservations = $this->getReservations($info);
         $holidayEvents = $this->getHolidays($info, $org);
         $weekendBackgrounds = $this->makeWeekendBackgroundEvents($info);
 
         return collect()
-            ->push(...$weekendBackgrounds)
+            ->push(...$nonWorkingPeriods)
+            //->push(...$weekendBackgrounds) //not required, becouse we have non-working periods
             ->push(...$reservations->get())
             ->push(...$holidayEvents);
     }

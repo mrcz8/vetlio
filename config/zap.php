@@ -94,7 +94,7 @@ return [
     |
     */
     'validation' => [
-        'require_future_dates' => true, // Schedules must be in the future
+        'require_future_dates' => false, // Schedules must be in the future
         'max_date_range' => 365, // Maximum days between start and end date
         'min_period_duration' => 15, // Minimum period duration in minutes
         'max_periods_per_schedule' => 50, // Maximum periods per schedule

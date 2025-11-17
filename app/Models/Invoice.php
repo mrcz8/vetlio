@@ -59,6 +59,7 @@ class Invoice extends Model
         'total_tax' => MoneyCast::class,
         'fiscalization_at' => 'datetime',
     ];
+
     public function servicesList(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         $instance = new Service;
@@ -86,7 +87,7 @@ class Invoice extends Model
     public function payed(): Attribute
     {
         return Attribute::make(function () {
-            return $this->total == $this->payments->sum('amount');
+            return $this->total <= $this->payments->sum('amount');
         });
     }
 

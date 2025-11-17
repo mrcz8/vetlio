@@ -20,6 +20,7 @@ return new class extends Migration
             $table->boolean('active')->default(true);
             $table->string('branch_mark')->nullable();
             $table->unsignedInteger('price_list_id')->nullable();
+            $table->text('work_schedule')->nullable();
             $table->integer('organisation_id');
             $table->softDeletes();
             $table->timestamps();

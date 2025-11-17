@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Invoices\Pages;
 
 use App\Enums\Icons\PhosphorIcons;
+use App\Filament\App\Resources\Invoices\HasInvoiceHeaderActions;
 use App\Filament\App\Resources\Invoices\InvoiceResource;
 use App\Filament\App\Resources\Payments\Schemas\PaymentForm;
 use App\Filament\App\Resources\Payments\Tables\PaymentsTable;
@@ -18,6 +19,8 @@ use Livewire\Livewire;
 
 class InvoicePayments extends ManageRelatedRecords
 {
+    use HasInvoiceHeaderActions;
+
     protected static string $resource = InvoiceResource::class;
 
     protected static string $relationship = 'payments';

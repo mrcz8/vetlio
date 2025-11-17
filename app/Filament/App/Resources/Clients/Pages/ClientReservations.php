@@ -26,9 +26,9 @@ class ClientReservations extends ManageRelatedRecords
 
     protected static string|BackedEnum|null $navigationIcon = PhosphorIcons::CalendarPlus;
 
-    protected static ?string $title = 'Reservations';
+    protected static ?string $title = 'Appointments';
 
-    protected static ?string $navigationLabel = 'Reservations';
+    protected static ?string $navigationLabel = 'Appointments';
 
     protected function getHeaderActions(): array
     {

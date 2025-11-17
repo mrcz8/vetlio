@@ -4,6 +4,8 @@ namespace App\Filament\App\Resources\Reservations\Schemas;
 
 use App\Enums\Icons\PhosphorIcons;
 use App\Filament\App\Actions\CancelReservationAction;
+use App\Filament\App\Resources\Reservations\Actions\EditAppointmentAction;
+use App\Filament\App\Resources\Reservations\Pages\EditReservation;
 use CodeWithDennis\SimpleAlert\Components\SimpleAlert;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -184,8 +186,7 @@ class ReservationInfolist
     {
         return Flex::make([
             CancelReservationAction::make(),
-            EditAction::make()
-            ->disabled(fn ($record) => $record->is_canceled),
+            EditAppointmentAction::make(),
             DeleteAction::make(),
         ]);
     }

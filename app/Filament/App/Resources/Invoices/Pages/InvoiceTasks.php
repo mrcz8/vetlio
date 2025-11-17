@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Invoices\Pages;
 
 use App\Enums\Icons\PhosphorIcons;
+use App\Filament\App\Resources\Invoices\HasInvoiceHeaderActions;
 use App\Filament\App\Resources\Invoices\InvoiceResource;
 use App\Filament\App\Resources\Tasks\Schemas\TaskForm;
 use App\Filament\App\Resources\Tasks\Tables\TasksTable;
@@ -16,6 +17,8 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class InvoiceTasks extends ManageRelatedRecords
 {
+    use HasInvoiceHeaderActions;
+
     protected static string $resource = InvoiceResource::class;
 
     protected static string $relationship = 'tasks';
@@ -29,20 +32,6 @@ class InvoiceTasks extends ManageRelatedRecords
     public function getSubheading(): string|Htmlable|null
     {
         return 'Invoice: ' . $this->getRecord()->code;
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            CreateAction::make()
-                ->fillForm(function ($data) {
-                    $data['start_at'] = now();
-                    $data['related_type'] = Invoice::class;
-                    $data['related_id'] = $this->getRecord()->id;
-
-                    return $data;
-                }),
-        ];
     }
 
     public function form(Schema $schema): Schema
