@@ -10,7 +10,10 @@ use App\Models\Room;
 use App\Models\Service;
 use App\Models\User;
 use Carbon\Carbon;
+use CodeWithDennis\SimpleAlert\Components\SimpleAlert;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -27,6 +30,14 @@ class ReservationForm
     {
         return $schema
             ->components([
+                SimpleAlert::make('no-availability')
+                    ->warning()
+                    ->border()
+                    ->hidden(fn($get) => !$get('availability_conflicts'))
+                    ->columnSpanFull()
+                    ->title('Warning!')
+                    ->description('The selected time is not available for the selected veterinarian and room.'),
+
                 Select::make('client_id')
                     ->label('Client')
                     ->options(Client::pluck('first_name', 'id'))
@@ -35,14 +46,14 @@ class ReservationForm
                     ->createOptionUsing(fn($data) => Client::create($data)->getKey())
                     ->required()
                     ->prefixIcon(PhosphorIcons::User)
-                    ->live()
+                    ->live(true)
                     ->afterStateUpdated(fn($state, $get, $set) => $set('patient_id', null)),
 
                 Select::make('patient_id')
                     ->prefixIcon(PhosphorIcons::Dog)
                     ->label('Patient')
                     ->required()
-                    ->live()
+                    ->live(true)
                     ->disabled(fn($get) => !$get('client_id'))
                     ->options(function (Get $get) {
                         $patients = Patient::query();
@@ -55,7 +66,7 @@ class ReservationForm
 
                 Select::make('service_id')
                     ->label('Service')
-                    ->live()
+                    ->live(true)
                     ->required()
                     ->options(function (Get $get) {
                         $services = Service::whereHas('currentPrice');
@@ -68,7 +79,7 @@ class ReservationForm
                     })
                     ->afterStateUpdated(function ($state, $get, $set) {
                         $startTime = $get('from');
-                        if ($startTime) {
+                        if ($startTime && $state) {
                             $totalMinutes = Service::find($state)->duration->minute;
                             $endTime = Carbon::parse($startTime)->addMinutes($totalMinutes);
                             $set('to', $endTime);
@@ -89,7 +100,7 @@ class ReservationForm
                         return $users->pluck('first_name', 'id');
                     })
                     ->prefixIcon(PhosphorIcons::UserPlus)
-                    ->live()
+                    ->live(true)
                     ->options(User::whereServiceProvider(true)->pluck('first_name', 'id'))
                     ->afterStateUpdated(fn($state, $get, $set) => self::checkAvailability($get, $set)),
 
@@ -107,16 +118,23 @@ class ReservationForm
                         return $rooms->pluck('name', 'id');
                     })
                     ->label('Room')
-                    ->live(false, 500)
+                    ->live(true)
                     ->afterStateUpdated(fn($state, $get, $set) => self::checkAvailability($get, $set)),
 
                 Flex::make([
                     DateTimePicker::make('from')
-                        ->live(false, 500)
+                        ->live(true)
                         ->required()
                         ->label('Start time')
                         ->seconds(false)
                         ->afterStateUpdated(function ($state, $get, $set) {
+                            if ($get('service_id') == null) return;
+
+                            $totalMinutes = Service::find($get('service_id'))->duration->minute;
+                            $set('to', Carbon::parse($state)->addMinutes($totalMinutes));
+
+                            self::checkAvailability($get, $set);
+
                             $reminders = $get('reservationReminders');
                             if (!$reminders) return;
 
@@ -129,13 +147,6 @@ class ReservationForm
                                 $scheduled = self::calculateSendingTime($state, $offsetAmount, $offsetUnit);
                                 $set("reservationReminders.{$index}.scheduled_at", $scheduled);
                             }
-
-                            if ($get('service_id') == null) return;
-
-                            $totalMinutes = Service::find($get('service_id'))->duration->minute;
-                            $set('to', Carbon::parse($state)->addMinutes($totalMinutes));
-
-                            self::checkAvailability($get, $set);
                         }),
 
                     DateTimePicker::make('to')
@@ -149,7 +160,8 @@ class ReservationForm
                     ->columnSpanFull()
                     ->label('Note'),
 
-                Textarea::make('availability_conflicts')
+
+                Hidden::make('availability_conflicts')
                     ->columnSpanFull()
                     ->label('Availability conflicts')
                     ->disabled(),
@@ -165,7 +177,7 @@ class ReservationForm
                                 Repeater::make('reservationReminders')
                                     ->columns(7)
                                     ->columnSpanFull()
-                                    ->live(true, 500)
+                                    ->live(true)
                                     ->relationship()
                                     ->reorderable(false)
                                     ->afterStateUpdated(function (Get $get, Set $set, $state) {
@@ -195,7 +207,7 @@ class ReservationForm
                                             ->default(2)
                                             ->columnSpan(1)
                                             ->required()
-                                            ->live(true, 500)
+                                            ->live(true)
                                             ->minValue(1)
                                             ->inputMode('numeric')
                                             ->integer()
@@ -261,8 +273,17 @@ class ReservationForm
             $start = Carbon::parse($start)->format('H:i');
             $end = Carbon::parse($end)->format('H:i');
 
-            $doctor = User::find($userId);
+            $branch = Filament::getTenant();
 
+            if (!$branch->getBookableSlots($date)) {
+                $conflicts[] = 'No schedule is set for this branch.';
+            }
+
+            if (!Filament::getTenant()->isAvailableAt($date, $start, $end)) {
+                $conflicts[] = 'The selected time is not available for branch.';
+            }
+
+            $doctor = User::find($userId);
             if ($doctor && !$doctor->isAvailableAt($date, $start, $end)) {
                 $conflicts[] = 'The veterinarian is not available during the selected time.';
             }

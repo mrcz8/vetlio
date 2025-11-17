@@ -35,14 +35,12 @@ class BranchObserver
         ];
 
         foreach ($days as $day) {
-            if (!array_key_exists($day, $formData)) {
+            if (! array_key_exists($day, $formData)) {
                 continue;
             }
 
             $periods = collect($formData[$day] ?? [])
-                ->filter(function ($period) {
-                    return !empty($period['from']) && !empty($period['to']);
-                })
+                ->filter(fn ($period) => ! empty($period['from']) && ! empty($period['to']))
                 ->values();
 
             if ($periods->isEmpty()) {
@@ -50,11 +48,12 @@ class BranchObserver
             }
 
             $builder = Zap::for($model)
-                ->named("Availability {$day} {$year}")
+                ->named("Working hours {$day} {$year}")
                 ->availability()
                 ->forYear($year)
                 ->withMetadata([
                     'branch_id' => $model->id,
+                    'day'       => $day,
                 ])
                 ->weekly([$day]);
 
@@ -65,4 +64,5 @@ class BranchObserver
             $builder->save();
         }
     }
+
 }
