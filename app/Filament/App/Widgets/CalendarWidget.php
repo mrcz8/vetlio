@@ -2,12 +2,13 @@
 
 namespace App\Filament\App\Widgets;
 
-use App\Enums\CalendarEventsType;
+use App\Enums\Icons\PhosphorIcons;
+use App\Filament\App\Entries\PlaceholderEntry;
 use App\Filament\App\Resources\Reservations\Schemas\ReservationForm;
 use App\Filament\App\Resources\Reservations\Schemas\ReservationInfolist;
-use App\Models\Client;
 use App\Models\Holiday;
 use App\Models\Reservation;
+use App\Models\Room;
 use App\Models\User;
 use App\Queries\Holidays;
 use Carbon\CarbonImmutable;
@@ -15,9 +16,9 @@ use Carbon\CarbonInterface;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\ToggleButtons;
+use Filament\Forms\Components\Radio;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Guava\Calendar\Attributes\CalendarEventContent;
@@ -72,6 +73,7 @@ class CalendarWidget extends BaseCalendarWidget
 
     //Resources for header
     public ?Collection $selectedResources = null;
+    public ?int $resourceType = 1;
 
     public function mount(): void
     {
@@ -86,38 +88,80 @@ class CalendarWidget extends BaseCalendarWidget
         return [
             Action::make('filter')
                 ->slideOver()
+                ->modalHeading('Filter')
+                ->modalDescription('Filter calendar by date, service or user')
+                ->modalIcon(PhosphorIcons::FilesThin)
                 ->hiddenLabel()
                 ->button()
                 ->icon(Heroicon::Cog)
                 ->label('Filter')
                 ->fillForm(function ($data) {
-                    $data['users'] = $this->selectedResources;
+                    $data['group_by'] = $this->resourceType;
+
+                    if ($this->resourceType == 1) {
+                        $data['users'] = $this->selectedResources->pluck('id');
+                    } else if ($this->resourceType == 3) {
+                        $data['rooms'] = $this->selectedResources->pluck('id');
+                    }
+
 
                     return $data;
                 })
                 ->schema([
-                    ToggleButtons::make('type')
-                        ->grouped()
-                        ->label('View type')
-                        ->columnSpanFull()
-                        ->default(CalendarEventsType::All)
-                        ->options(CalendarEventsType::class),
+                    Grid::make(2)
+                        ->schema([
+                            Radio::make('group_by')
+                                ->columnSpanFull()
+                                ->hint('Group by events by selected resource.')
+                                ->label('Group by')
+                                ->default(1)
+                                ->afterStateUpdated(function ($state, $set) {
+                                    $set('users', []);
+                                    $set('rooms', []);
+                                })
+                                ->inline()
+                                ->live(false, 300)
+                                ->options([
+                                    1 => 'Users',
+                                    2 => 'Services',
+                                    3 => 'Rooms'
+                                ]),
 
-                    CheckboxList::make('users')
-                        ->columnSpanFull()
-                        ->hint('Show only selected users')
-                        ->label('Users')
-                        ->options(User::all()->pluck('name', 'id')),
+                            PlaceholderEntry::make('divider'),
 
-                    Select::make('clients')
-                        ->label('Client')
-                        ->hint('Show only client reservations')
-                        ->options(Client::all()->pluck('full_name', 'id'))
+                            CheckboxList::make('users')
+                                ->visible(function ($get) {
+                                    return $get('group_by') == 1;
+                                })
+                                ->required(function ($get) {
+                                    return $get('group_by') == 1;
+                                })
+                                ->bulkToggleable()
+                                ->columnSpanFull()
+                                ->label('Users')
+                                ->options(User::all()->pluck('name', 'id')),
+
+                            CheckboxList::make('rooms')
+                                ->visible(function ($get) {
+                                    return $get('group_by') == 3;
+                                })
+                                ->required(function ($get) {
+                                    return $get('group_by') == 3;
+                                })
+                                ->bulkToggleable()
+                                ->columnSpanFull()
+                                ->label('Rooms')
+                                ->options(Room::all()->pluck('name', 'id')),
+                        ])
                 ])
                 ->action(function (array $data) {
-                    if (Arr::get($data, 'users')) {
-                        $this->selectedResources = collect($data['users']);
+                    if ($data['group_by'] == 1) {
+                        $this->selectedResources = User::whereIn('id', Arr::get($data, 'users'))->get();
+                    } else if ($data['group_by'] == 3) {
+                        $this->selectedResources = Room::whereIn('id', Arr::get($data, 'rooms'))->get();
                     }
+
+                    $this->resourceType = Arr::get($data, 'group_by');
 
                     $this->refreshResources();
                     $this->refreshRecords();
@@ -560,7 +604,7 @@ class CalendarWidget extends BaseCalendarWidget
         $flagKey = "{$dayName}_working";
 
         //Check is working day
-        if (!$schedule[$flagKey]) return false;
+        if (isset($schedule[$flagKey]) && !$schedule[$flagKey]) return false;
 
         $shifts = collect($schedule[$dayName] ?? []);
 
@@ -582,6 +626,6 @@ class CalendarWidget extends BaseCalendarWidget
         $start = Carbon::parse($startTime)->format('H:i:s');
         $end = Carbon::parse($endTime)->format('H:i:s');
 
-        return $time > $start && $time < $end;
+        return $time >= $start && $time <= $end;
     }
 }
