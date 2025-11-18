@@ -3,10 +3,10 @@
 namespace App\Filament\App\Widgets;
 
 use App\Enums\CalendarEventsType;
-use App\Filament\App\Actions\CancelReservationAction;
 use App\Filament\App\Resources\Reservations\Schemas\ReservationForm;
 use App\Filament\App\Resources\Reservations\Schemas\ReservationInfolist;
 use App\Models\Client;
+use App\Models\Holiday;
 use App\Models\Reservation;
 use App\Models\User;
 use App\Queries\Holidays;
@@ -17,6 +17,7 @@ use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\ToggleButtons;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Guava\Calendar\Concerns\CalendarAction;
@@ -25,9 +26,13 @@ use Guava\Calendar\Filament\Actions\CreateAction;
 use Guava\Calendar\Filament\Actions\ViewAction;
 use Guava\Calendar\Filament\CalendarWidget as BaseCalendarWidget;
 use Guava\Calendar\ValueObjects\CalendarEvent;
+use Guava\Calendar\ValueObjects\DateClickInfo;
+use Guava\Calendar\ValueObjects\DateSelectInfo;
 use Guava\Calendar\ValueObjects\DatesSetInfo;
+use Guava\Calendar\ValueObjects\EventClickInfo;
 use Guava\Calendar\ValueObjects\FetchInfo;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -72,6 +77,7 @@ class CalendarWidget extends BaseCalendarWidget
             return $query->where('branch_id', Filament::getTenant()->id);
         })->get();
     }
+
 
     public function getHeaderActions(): array
     {
@@ -123,7 +129,7 @@ class CalendarWidget extends BaseCalendarWidget
         $workingTimes = $this->getEarliestWorkingStartForDate($info->start);
 
         $this->setOption('slotMinTime', $workingTimes['min']);
-        $this->setOption('slotMaxTime', $workingTimes['max']);
+        //$this->setOption('slotMaxTime', $workingTimes['max']); ?? Buggy, it's not working'
     }
 
     protected function getEarliestWorkingStartForDate(CarbonInterface|string $date): array
@@ -175,20 +181,44 @@ class CalendarWidget extends BaseCalendarWidget
         return null;
     }
 
-    public function getReservations(FetchInfo $info)
+    public function getReservations(FetchInfo $info): Collection
     {
-        return Reservation::query()
+        $appointments = Reservation::query()
             ->canceled(false)
             ->with(['client', 'serviceProvider', 'service'])
             ->whereDate('to', '>=', $info->start)
-            ->whereDate('from', '<=', $info->end);
+            ->whereDate('from', '<=', $info->end)
+            ->get();
+
+        return $appointments->map(function ($appointment) {
+            return CalendarEvent::make()
+                ->key($appointment)
+                ->title($appointment->client->full_name)
+                ->extendedProps([
+                    'model' => Reservation::class,
+                    'key' => $appointment->getKey(),
+                    'start' => $appointment->from->format('H:i'),
+                    'end' => $appointment->to->format('H:i'),
+                    'client' => $appointment->client->full_name,
+                    'service' => $appointment->service->name,
+                    'location' => $appointment->branch->name
+                ])
+                ->resourceId($appointment->serviceProvider->id)
+                ->startEditable()
+                ->backgroundColor($appointment->service->color ?? '#8bc34a')
+                ->start($appointment->from)
+                ->end($appointment->to);
+        });
+
     }
 
-    public function getHolidays(FetchInfo $info, mixed $org)
+    public function getHolidays(FetchInfo $info)
     {
+        $org = auth()->user()->organisation_id;
+
         $rangeStart = Carbon::parse($info->start)->toDateString();
         $rangeEnd = Carbon::parse($info->end)->toDateString();
-        $cacheKey = "org:{$org->id}:holidays:{$rangeStart}:{$rangeEnd}";
+        $cacheKey = "org:{$org}:holidays:{$rangeStart}:{$rangeEnd}";
 
         $holidays = Cache::remember($cacheKey, now()->addHours(6), function () use ($rangeStart, $rangeEnd) {
             return app(Holidays::class)->forRange(
@@ -203,6 +233,7 @@ class CalendarWidget extends BaseCalendarWidget
             $start = $h->date instanceof Carbon ? $h->date : Carbon::parse($h->date);
 
             return CalendarEvent::make()
+                ->model(Holiday::class)
                 ->key($h->id)
                 ->title($h->getAttribute('name') ?? 'Holiday')
                 ->start($start->toDateString())
@@ -248,61 +279,72 @@ class CalendarWidget extends BaseCalendarWidget
         ];
     }
 
-    protected function getDateSelectContextMenuActions(): array
+    public function createBlockTimeAction(): Action
     {
-        return [
-            CreateAction::make('createBlockTime')
-                ->color('danger')
-                ->modalIcon(Heroicon::MinusCircle)
-                ->icon(Heroicon::MinusCircle)
-                ->label('Unavailable')
-                ->model(Reservation::class)
-                ->modalHeading('Unavailable time')
-                ->mountUsing(function ($schema, $arguments) {
-                    $date = data_get($arguments, 'data.dateStr');
-                    $resourceId = data_get($arguments, 'data.resource.id');
+        return CreateAction::make('createBlockTime')
+            ->modalIcon(Heroicon::Calendar)
+            ->icon(Heroicon::Calendar)
+            ->label('New block time')
+            ->model(Reservation::class)
+            ->modalHeading('New block time')
+            ->mountUsing(function ($schema, $arguments) {
+                $date = data_get($arguments, 'data.dateStr');
+                $resourceId = data_get($arguments, 'data.resource.id');
 
-                    $schema->fill([
-                        'service_provider_id' => $resourceId,
-                        'from' => Carbon::make($date),
-                    ]);
-                }),
-        ];
+                $schema->fill([
+                    'service_provider_id' => $resourceId,
+                    'from' => Carbon::make($date),
+                ]);
+            });
     }
 
-    protected function getDateClickContextMenuActions(): array
+    protected function onDateSelect(DateSelectInfo $info): void
     {
-        return [
-            CreateAction::make('createAppointment')
-                ->modalIcon(Heroicon::Calendar)
-                ->icon(Heroicon::Calendar)
-                ->label('New reservation')
-                ->model(Reservation::class)
-                ->modalHeading('New reservation')
-                ->mountUsing(function ($schema, $arguments) {
-                    $date = data_get($arguments, 'data.dateStr');
-                    $resourceId = data_get($arguments, 'data.resource.id');
-
-                    $schema->fill([
-                        'service_provider_id' => $resourceId,
-                        'from' => Carbon::make($date),
-                    ]);
-                }),
-        ];
+        //$this->mountAction('createBlockTime');
     }
 
-    protected function getEventClickContextMenuActions(): array
+    private function isHoliday($date): bool
     {
-        return [
-            $this->viewAction(),
-            $this->editAction(),
-            CancelReservationAction::make()
-                ->record(function ($livewire) {
-                    return $livewire->getEventRecord();
-                })->after(function () {
-                    $this->refreshRecords();
-                })
-        ];
+        return Holiday::whereDate('date', $date)->whereCountryId(auth()->user()->organisation->country_id)->exists();
+    }
+
+    protected function onDateClick(DateClickInfo $info): void
+    {
+        //Check if holiday
+        if ($this->isHoliday($info->date)) {
+            Notification::make()
+                ->danger()
+                ->title('This date is a holiday')
+                ->body("You cannot book an appointment on holiday.")
+                ->send();
+
+            return;
+        }
+
+        //Check if working day of branch
+        if (!$this->isWorkingPeriod($info->date)) {
+            $date = Carbon::parse($info->date)->format('d.m.Y H:i');
+
+            Notification::make()
+                ->danger()
+                ->title('Non working time')
+                ->body("You cannot book an appointment. Clinic is not working at {$date}")
+                ->send();
+
+            return;
+        }
+
+        $this->mountAction('createAppointment');
+    }
+
+    protected function onEventClick(EventClickInfo $info, Model $event, ?string $action = null): void
+    {
+        //Dont open rendered holidays
+        if ($event instanceof Holiday) return;
+
+        if ($event instanceof Reservation) {
+            $this->mountAction('view', ['record' => $event]);
+        }
     }
 
     public function defaultSchema(Schema $schema): Schema
@@ -441,17 +483,13 @@ class CalendarWidget extends BaseCalendarWidget
 
     protected function getEvents(FetchInfo $info): Collection|array|Builder
     {
-        $org = auth()->user()->organisation;
-
         $nonWorkingPeriods = $this->nonWorkingPeriods($info);
         $reservations = $this->getReservations($info);
-        $holidayEvents = $this->getHolidays($info, $org);
-        $weekendBackgrounds = $this->makeWeekendBackgroundEvents($info);
+        $holidayEvents = $this->getHolidays($info);
 
         return collect()
             ->push(...$nonWorkingPeriods)
-            //->push(...$weekendBackgrounds) //not required, becouse we have non-working periods
-            ->push(...$reservations->get())
+            ->push(...$reservations)
             ->push(...$holidayEvents);
     }
 
@@ -487,5 +525,56 @@ class CalendarWidget extends BaseCalendarWidget
         }
 
         return $events;
+    }
+
+    public function createAppointmentAction(): Action
+    {
+        return CreateAction::make('createAppointment')
+            ->modalIcon(Heroicon::Calendar)
+            ->icon(Heroicon::Calendar)
+            ->label('New appointment')
+            ->model(Reservation::class)
+            ->modalHeading('New appointment')
+            ->mountUsing(function ($schema, $arguments) {
+                $date = data_get($arguments, 'data.dateStr');
+                $resourceId = data_get($arguments, 'data.resource.id');
+
+                $schema->fill([
+                    'service_provider_id' => $resourceId,
+                    'from' => Carbon::make($date),
+                ]);
+            });
+    }
+
+    private function isWorkingPeriod(CarbonInterface $date): bool
+    {
+        $schedule = Filament::getTenant()->work_schedule ?? [];
+        $dayName = strtolower($date->format('l'));
+        $flagKey = "{$dayName}_working";
+
+        //Check is working day
+        if (!$schedule[$flagKey]) return false;
+
+        $shifts = collect($schedule[$dayName] ?? []);
+
+        $shifts = $shifts->filter(fn($shift) => !empty($shift['from']) && !empty($shift['to']));
+
+        foreach ($shifts as $shift) {
+            $from = Carbon::parse($shift['from']);
+            $to = Carbon::parse($shift['to']);
+
+            if ($this->isTimeBetween($date->toTimeString(), $from->toTimeString(), $to->toTimeString())) return true;
+        }
+
+        return false;
+    }
+
+    function isTimeBetween($timeToCheck, $startTime, $endTime)
+    {
+        $time = Carbon::parse($timeToCheck)->format('H:i:s');
+        $start = Carbon::parse($startTime)->format('H:i:s');
+        $end = Carbon::parse($endTime)->format('H:i:s');
+
+        return $time > $start && $time < $end;
     }
 }

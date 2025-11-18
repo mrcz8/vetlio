@@ -6,8 +6,6 @@ use App\Enums\ReservationStatus;
 use App\Observers\ReservationObserver;
 use App\Traits\AddedByCurrentUser;
 use App\Traits\Organisationable;
-use Guava\Calendar\Contracts\Eventable;
-use Guava\Calendar\ValueObjects\CalendarEvent;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ObservedBy([ReservationObserver::class])]
-class Reservation extends Model implements Eventable
+class Reservation extends Model
 {
     /** @use HasFactory<\Database\Factories\ReservationFactory> */
     use HasFactory, SoftDeletes, Organisationable, AddedByCurrentUser;
@@ -211,21 +209,4 @@ class Reservation extends Model implements Eventable
         }
     }
 
-    public function toCalendarEvent(): CalendarEvent
-    {
-        return CalendarEvent::make($this)
-            ->title($this->client->full_name)
-            ->extendedProps([
-                'start' => $this->from->format('H:i'),
-                'end' => $this->to->format('H:i'),
-               // 'client' => $this->client->full_name,
-                //'service' => $this->service->name,
-               // 'location' => $this->branch->name
-            ])
-            ->resourceId($this->serviceProvider->id)
-            ->startEditable()
-            ->backgroundColor($this->service->color ?? '#8bc34a')
-            ->start($this->from)
-            ->end($this->to);
-    }
 }
