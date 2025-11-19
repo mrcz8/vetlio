@@ -19,4 +19,9 @@ class NewAppointmentAction extends CreateAction
         $this->modalIcon(PhosphorIcons::CalendarPlus);
         $this->color('success');
     }
+
+    public static function getDefaultName(): ?string
+    {
+        return 'create-appointment-action';
+    }
 }

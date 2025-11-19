@@ -26,11 +26,6 @@ class ClientPatients extends ManageRelatedRecords
 
     protected static ?string $title = 'Patients';
 
-    public function getSubheading(): string|Htmlable|null
-    {
-        return $this->getRecord()->full_name;
-    }
-
     public static function getNavigationBadge(): ?string
     {
         $record = Livewire::current()->getRecord();

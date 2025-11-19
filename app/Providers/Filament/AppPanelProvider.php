@@ -47,7 +47,7 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('app')
             ->tenant(Branch::class)
-            ->spa()
+            //->spa()
             ->domain(request()->server('HTTP_HOST'))
             ->login()
             ->passwordReset()
@@ -83,11 +83,8 @@ class AppPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 PanelsRenderHook::PAGE_SUB_NAVIGATION_SIDEBAR_BEFORE, function () {
-                if (request()->routeIs('filament.app.resources.clients.*')) {
                     return Blade::render('@livewire(\'client-card-header\')');
-                }
-                return null;
-            },
+            }, scopes: ClientResource::class
             )
             ->userMenuItems([
                 Action::make('settings')

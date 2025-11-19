@@ -18,14 +18,17 @@ use App\Filament\App\Resources\Clients\Schemas\ClientInfolist;
 use App\Filament\App\Resources\Clients\Tables\ClientsTable;
 use App\Models\Client;
 use BackedEnum;
+use Filament\Panel\Concerns\HasRenderHooks;
 use Filament\Resources\Pages\Page;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Blade;
 
 class ClientResource extends Resource
 {

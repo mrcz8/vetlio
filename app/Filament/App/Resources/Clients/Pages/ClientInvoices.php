@@ -27,11 +27,6 @@ class ClientInvoices extends ManageRelatedRecords
 
     protected static string|BackedEnum|null $navigationIcon = PhosphorIcons::Money;
 
-    public function getSubheading(): string|Htmlable|null
-    {
-        return $this->getRecord()->full_name;
-    }
-
     protected function getHeaderActions(): array
     {
         return [

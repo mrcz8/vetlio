@@ -32,11 +32,6 @@ class ClientReminders extends ManageRelatedRecords
         return $record->reminders_count;
     }
 
-    public function getSubheading(): string|Htmlable|null
-    {
-        return $this->getRecord()->full_name;
-    }
-
     protected function getHeaderActions(): array
     {
         return [

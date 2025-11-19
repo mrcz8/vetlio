@@ -41,11 +41,6 @@ class ClientReservations extends ManageRelatedRecords
         ];
     }
 
-    public function getSubheading(): string|Htmlable|null
-    {
-        return $this->getRecord()->full_name;
-    }
-
     public function form(Schema $schema): Schema
     {
         return ReservationForm::configure($schema);

@@ -34,11 +34,6 @@ class ClientNotes extends ManageRelatedRecords
         return $record->notes_count;
     }
 
-    public function getSubheading(): string|Htmlable|null
-    {
-        return $this->getRecord()->full_name;
-    }
-
     protected function getHeaderActions(): array
     {
         return [
